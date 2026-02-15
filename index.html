@@ -24,23 +24,75 @@
     radial-gradient(2px 2px at 35% 15%,rgba(124,92,252,0.6) 0%,transparent 100%),
     radial-gradient(2px 2px at 70% 85%,rgba(92,219,252,0.5) 0%,transparent 100%);
     pointer-events:none;z-index:0}
-  header{position:relative;z-index:10;padding:18px 32px;display:flex;align-items:center;gap:16px;
-    border-bottom:1px solid var(--border);background:rgba(13,15,26,0.9);backdrop-filter:blur(20px)}
-  .logo{font-size:2rem;animation:snake 2s ease-in-out infinite}
-  @keyframes snake{0%,100%{transform:rotate(-5deg)}50%{transform:rotate(5deg)}}
-  header h1{font-size:1.4rem;font-weight:900;background:linear-gradient(135deg,var(--accent),var(--accent3));
-    -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-  header p{font-size:0.8rem;color:var(--text2);margin-top:2px}
-  .header-right{margin-left:auto;display:flex;align-items:center;gap:10px}
-  .score-badge{background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:20px;
-    padding:5px 14px;font-size:0.82rem;font-weight:700;box-shadow:var(--glow)}
-  .pyodide-status{display:flex;align-items:center;gap:7px;font-size:0.78rem;color:var(--text2);
-    background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:5px 12px}
-  .status-dot{width:7px;height:7px;border-radius:50%;background:var(--accent4);animation:pulse 1.5s infinite}
+  header{
+    position:relative;z-index:10;
+    height:52px;padding:0 24px;
+    display:flex;align-items:center;gap:12px;
+    background:var(--surface);
+    border-bottom:1px solid rgba(255,255,255,0.06);
+  }
+  .logo{font-size:1.3rem;animation:snake 3s ease-in-out infinite;line-height:1}
+  @keyframes snake{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(8deg)}}
+  .brand{display:flex;align-items:center;gap:8px}
+  .brand-name{font-size:0.95rem;font-weight:700;color:var(--text);letter-spacing:-0.2px}
+  .brand-sep{width:1px;height:16px;background:rgba(255,255,255,0.1)}
+  /* Python status pill */
+  .py-status{display:flex;align-items:center;gap:5px;font-size:0.72rem;color:var(--text2)}
+  .status-dot{width:6px;height:6px;border-radius:50%;background:var(--accent4);animation:pulse 1.5s infinite;flex-shrink:0}
   .status-dot.ready{background:var(--green);animation:none}
   .status-dot.error{background:var(--red);animation:none}
-  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(0.8)}}
-  .app{display:grid;grid-template-columns:280px 1fr;height:calc(100vh - 73px);position:relative;z-index:1}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+  /* Score */
+  .score-pill{margin-left:auto;display:flex;align-items:center;gap:6px;
+    font-size:0.78rem;font-weight:600;color:var(--text2)}
+  .score-pill strong{color:var(--text);font-size:0.9rem}
+  /* Divider */
+  .nav-sep{width:1px;height:18px;background:rgba(255,255,255,0.08)}
+  /* Nav icon buttons */
+  .nav-icon-btn{
+    display:flex;align-items:center;gap:6px;
+    padding:5px 10px;border-radius:7px;border:none;
+    background:transparent;color:var(--text2);
+    font-family:'Prompt',sans-serif;font-size:0.75rem;font-weight:600;
+    cursor:pointer;transition:background 0.15s,color 0.15s;
+    white-space:nowrap;
+  }
+  .nav-icon-btn:hover{background:var(--surface2);color:var(--text)}
+  .nav-icon-btn.green:hover{color:var(--green)}
+  .nav-icon-btn.yellow:hover{color:var(--accent4)}
+  .nav-icon-btn.cyan:hover{color:var(--accent3)}
+  .nav-icon-btn.purple:hover{color:var(--accent)}
+  .nav-icon-btn:disabled{opacity:0.4;cursor:not-allowed}
+  /* Toast system */
+  #toast-container{
+    position:fixed;bottom:24px;right:24px;
+    z-index:9000;display:flex;flex-direction:column;
+    gap:8px;align-items:flex-end;pointer-events:none;
+  }
+  .toast{
+    display:flex;align-items:center;gap:10px;
+    padding:10px 16px;border-radius:10px;
+    font-size:0.8rem;font-weight:600;
+    background:var(--surface2);border:1px solid rgba(255,255,255,0.08);
+    box-shadow:0 8px 32px rgba(0,0,0,0.4);
+    pointer-events:auto;
+    transform:translateX(120%);opacity:0;
+    transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1),opacity 0.3s ease;
+    max-width:340px;
+  }
+  .toast.show{transform:translateX(0);opacity:1}
+  .toast.hide{transform:translateX(120%);opacity:0;transition:transform 0.25s ease,opacity 0.25s ease}
+  .toast-ok{color:var(--green);border-left:3px solid var(--green)}
+  .toast-err{color:var(--red);border-left:3px solid var(--red)}
+  .toast-info{color:var(--accent3);border-left:3px solid var(--accent3)}
+  .toast-icon{font-size:1rem;flex-shrink:0}
+  .toast-msg{flex:1;line-height:1.4}
+  .toast-close{background:none;border:none;color:var(--text2);cursor:pointer;
+    font-size:0.9rem;padding:0 0 0 4px;opacity:0.5;transition:opacity 0.15s}
+  .toast-close:hover{opacity:1}
+  /* JSON loader bar — removed, merged into header */
+  .json-loader-bar{display:none}
+  .app{display:grid;grid-template-columns:280px 1fr;height:calc(100vh - 55px);position:relative;z-index:1}
   .sidebar{background:var(--surface);border-right:1px solid var(--border);overflow-y:auto;padding:16px 0}
   .sidebar::-webkit-scrollbar{width:3px}
   .sidebar::-webkit-scrollbar-thumb{background:var(--accent);border-radius:2px}
@@ -67,6 +119,29 @@
   .badge-print{background:rgba(92,219,252,0.2);color:var(--accent3);border:1px solid rgba(92,219,252,0.3)}
   .badge-var{background:rgba(252,220,92,0.2);color:var(--accent4);border:1px solid rgba(252,220,92,0.3)}
   .badge-input{background:rgba(92,252,156,0.2);color:var(--green);border:1px solid rgba(92,252,156,0.3)}
+  .badge-condition{background:rgba(252,92,156,0.2);color:var(--accent2);border:1px solid rgba(252,92,156,0.3)}
+  .badge-loop{background:rgba(252,180,92,0.2);color:#fcb45c;border:1px solid rgba(252,180,92,0.3)}
+  /* badge styles */
+  /* Progress modal */
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:500;
+    display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+  .modal-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;
+    padding:28px 32px;min-width:320px;max-width:420px;box-shadow:var(--glow)}
+  .modal-title{font-size:1.1rem;font-weight:700;margin-bottom:6px}
+  .modal-sub{font-size:0.82rem;color:var(--text2);margin-bottom:20px;line-height:1.5}
+  .modal-field{margin-bottom:14px}
+  .modal-field label{display:block;font-size:0.78rem;color:var(--text2);margin-bottom:5px}
+  .modal-field input{width:100%;background:var(--surface2);border:1px solid var(--border);
+    border-radius:8px;padding:8px 12px;color:var(--text);font-family:'Prompt',sans-serif;
+    font-size:0.88rem;outline:none}
+  .modal-field input:focus{border-color:var(--accent)}
+  .modal-actions{display:flex;gap:9px;justify-content:flex-end;margin-top:20px}
+  .modal-btn{padding:8px 18px;border-radius:8px;border:none;cursor:pointer;
+    font-family:'Prompt',sans-serif;font-size:0.84rem;font-weight:700;transition:all 0.2s}
+  .modal-btn-primary{background:linear-gradient(135deg,var(--green),#3cdc7c);color:#0d0f1a}
+  .modal-btn-primary:hover{transform:translateY(-1px)}
+  .modal-btn-cancel{background:var(--surface2);color:var(--text2);border:1px solid var(--border)}
+  .modal-btn-cancel:hover{background:var(--surface3)}
   .problem-title{font-size:1rem;font-weight:700;color:var(--text);line-height:1.4}
   .problem-desc{font-size:0.84rem;color:var(--text2);line-height:1.6}
   .problem-desc code{background:var(--surface3);padding:1px 5px;border-radius:4px;
@@ -154,23 +229,62 @@
 </div>
 
 <header>
-  <div class="logo">🐍</div>
-  <div>
-    <h1>Python Adventure</h1>
-    <p>เรียน Python สนุกๆ สำหรับมือใหม่</p>
+  <!-- Brand -->
+  <div class="brand">
+    <span class="logo">🐍</span>
+    <span class="brand-name">Python Adventure</span>
   </div>
-  <div class="header-right">
-    <div class="pyodide-status">
-      <div class="status-dot" id="statusDot"></div>
-      <span id="statusText">กำลังโหลด...</span>
-    </div>
-    <div class="score-badge">⭐ <span id="scoreDisplay">0</span> / 20</div>
+
+  <div class="nav-sep"></div>
+
+  <!-- Python status -->
+  <div class="py-status">
+    <div class="status-dot" id="statusDot"></div>
+    <span id="statusText">กำลังโหลด</span>
   </div>
+
+  <!-- Score -->
+  <div class="score-pill">
+    <span>⭐</span>
+    <strong id="scoreDisplay">0</strong>
+    <span style="color:rgba(255,255,255,0.2)">/</span>
+    <span id="totalDisplay">20</span>
+  </div>
+
+  <div class="nav-sep"></div>
+
+  <!-- Exercises section -->
+  <button class="nav-icon-btn cyan" onclick="loadDefaultJson()" id="reloadJsonBtn" title="โหลดโจทย์จาก GitHub">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.12"/></svg>
+    โหลดโจทย์
+  </button>
+  <button class="nav-icon-btn purple" onclick="document.getElementById('jsonFileInput').click()" title="เพิ่มโจทย์จากไฟล์ .json">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+    เพิ่มโจทย์
+  </button>
+  <input type="file" id="jsonFileInput" accept=".json" onchange="loadFromFile(event)" style="display:none"/>
+
+  <div class="nav-sep"></div>
+
+  <!-- Progress section -->
+  <button class="nav-icon-btn green" onclick="saveProgress()" title="บันทึก progress">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+    บันทึก
+  </button>
+  <button class="nav-icon-btn yellow" onclick="document.getElementById('progressFileInput').click()" title="โหลด progress">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    โหลด Progress
+  </button>
+  <input type="file" id="progressFileInput" accept=".mxr" onchange="loadProgress(event)" style="display:none"/>
 </header>
+
+<!-- Toast container -->
+<div id="toast-container"></div>
 
 <div class="progress-bar">
   <div class="progress-fill" id="progressFill" style="width:0%"></div>
 </div>
+
 
 <div class="app">
   <aside class="sidebar" id="sidebar"></aside>
@@ -228,132 +342,25 @@
   </div>
 </div>
 
+<!-- SAVE MODAL -->
+<div class="modal-overlay" id="saveModal" style="display:none" onclick="if(event.target===this)closeSaveModal()">
+  <div class="modal-box">
+    <div class="modal-title">💾 บันทึก Progress</div>
+    <div class="modal-sub">ไฟล์จะถูกบันทึกเป็น <b>.mxr</b><br>สามารถโหลดกลับมาเรียนต่อได้ในภายหลัง</div>
+    <div class="modal-field">
+      <label>ชื่อผู้เรียน (ใส่หรือไม่ก็ได้)</label>
+      <input type="text" id="saveNameInput" placeholder="เช่น น้องหมี" maxlength="40" />
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn-cancel" onclick="closeSaveModal()">ยกเลิก</button>
+      <button class="modal-btn modal-btn-primary" onclick="confirmSave()">💾 บันทึกไฟล์</button>
+    </div>
+  </div>
+</div>
+
 <script>
-// ── EXERCISES ──────────────────────────────────────────────
-const exercises = [
-  // บทที่ 1: print
-  { id:1, chapter:"🖨️ บทที่ 1: คำสั่ง print", title:"ข้อ 1 — Hello, World!", badge:"print", badgeClass:"badge-print",
-    desc:'เขียนโปรแกรมแสดงข้อความ <b>Hello, World!</b> ออกมาทางหน้าจอ',
-    hint:'print("Hello, World!")',
-    starterCode:'# เขียนโปรแกรมของคุณที่นี่\n',
-    expected:"Hello, World!", inputs:[], type:"print" },
-
-  { id:2, chapter:null, title:"ข้อ 2 — แสดงชื่อ", badge:"print", badgeClass:"badge-print",
-    desc:'เขียนโปรแกรมแสดงข้อความ <b>ฉันชื่อ Python</b>',
-    hint:'print("ฉันชื่อ Python")',
-    starterCode:'# เขียนโปรแกรมของคุณที่นี่\n',
-    expected:"ฉันชื่อ Python", inputs:[], type:"print" },
-
-  { id:3, chapter:null, title:"ข้อ 3 — print หลายบรรทัด", badge:"print", badgeClass:"badge-print",
-    desc:'เขียน print 3 บรรทัดตามลำดับ: <code>แอปเปิ้ล</code> / <code>กล้วย</code> / <code>มะม่วง</code>',
-    hint:'ใช้ print() 3 ครั้ง แต่ละครั้งใส่ผลไม้หนึ่งชนิด',
-    starterCode:'# print ผลไม้ 3 ชนิด\n',
-    expected:"แอปเปิ้ล\nกล้วย\nมะม่วง", inputs:[], type:"print" },
-
-  { id:4, chapter:null, title:"ข้อ 4 — print ตัวเลข", badge:"print", badgeClass:"badge-print",
-    desc:'แสดงตัวเลข <b>42</b> (ไม่ต้องใส่เครื่องหมายคำพูด)',
-    hint:'print(42)  ← ตัวเลขไม่ต้องใส่ " "',
-    starterCode:'# print ตัวเลข 42\n',
-    expected:"42", inputs:[], type:"print" },
-
-  { id:5, chapter:null, title:"ข้อ 5 — Python สนุกมาก!", badge:"print", badgeClass:"badge-print",
-    desc:'แสดงข้อความ <b>Python สนุกมาก!</b>',
-    hint:'print("Python สนุกมาก!")',
-    starterCode:'# print ข้อความ\n',
-    expected:"Python สนุกมาก!", inputs:[], type:"print" },
-
-  // บทที่ 2: ตัวแปร
-  { id:6, chapter:"📦 บทที่ 2: ตัวแปร (Variables)", title:"ข้อ 6 — สร้างตัวแปร", badge:"ตัวแปร", badgeClass:"badge-var",
-    desc:'สร้างตัวแปร <code>name</code> เก็บค่า <code>"น้องหมี"</code> แล้ว print',
-    hint:'name = "น้องหมี"  แล้ว print(name)',
-    starterCode:'# สร้างตัวแปร name\nname = \n# print ค่า\n',
-    expected:"น้องหมี", inputs:[], type:"var" },
-
-  { id:7, chapter:null, title:"ข้อ 7 — ตัวแปรตัวเลข", badge:"ตัวแปร", badgeClass:"badge-var",
-    desc:'สร้างตัวแปร <code>age</code> เก็บค่า <code>10</code> แล้ว print',
-    hint:'age = 10  แล้ว print(age)',
-    starterCode:'# สร้างตัวแปร age\nage = \n# print ค่า\n',
-    expected:"10", inputs:[], type:"var" },
-
-  { id:8, chapter:null, title:"ข้อ 8 — ต่อตัวแปรกับข้อความ", badge:"ตัวแปร", badgeClass:"badge-var",
-    desc:'กำหนด <code>color = "แดง"</code> แล้ว print: <b>สีที่ฉันชอบคือ แดง</b>',
-    hint:'print("สีที่ฉันชอบคือ", color)  หรือ  print(f"สีที่ฉันชอบคือ {color}")',
-    starterCode:'color = "แดง"\n# print ข้อความ\n',
-    expected:"สีที่ฉันชอบคือ แดง", inputs:[], type:"var" },
-
-  { id:9, chapter:null, title:"ข้อ 9 — คำนวณด้วยตัวแปร", badge:"ตัวแปร", badgeClass:"badge-var",
-    desc:'กำหนด <code>x = 5</code> และ <code>y = 3</code> แล้ว print ผลบวก',
-    hint:'print(x + y)  → ควรได้ 8',
-    starterCode:'x = 5\ny = 3\n# print ผลบวก\n',
-    expected:"8", inputs:[], type:"var" },
-
-  { id:10, chapter:null, title:"ข้อ 10 — เปลี่ยนค่าตัวแปร", badge:"ตัวแปร", badgeClass:"badge-var",
-    desc:'กำหนด <code>score = 100</code> แล้วเปลี่ยนเป็น <code>200</code> แล้ว print',
-    hint:'score = 200  แล้ว print(score)',
-    starterCode:'score = 100\n# เปลี่ยนค่าเป็น 200\n# print ค่าใหม่\n',
-    expected:"200", inputs:[], type:"var" },
-
-  // บทที่ 3: input + math
-  { id:11, chapter:"🧮 บทที่ 3: input + คณิตศาสตร์", title:"ข้อ 11 — บวกเลข", badge:"input", badgeClass:"badge-input",
-    desc:'รับตัวเลข 2 ตัว แล้วแสดงผลบวก<br><small style="color:var(--accent3)">⚡ ระบบจะส่ง input: 5 และ 3 ให้อัตโนมัติ</small>',
-    hint:'a = int(input())  ← int() แปลง string เป็นตัวเลข',
-    starterCode:'a = int(input())\nb = int(input())\n# คำนวณผลบวก แล้ว print\n',
-    expected:"8", inputs:["5","3"], type:"input" },
-
-  { id:12, chapter:null, title:"ข้อ 12 — ลบเลข", badge:"input", badgeClass:"badge-input",
-    desc:'รับตัวเลข 2 ตัว แล้วแสดงผลลบ<br><small style="color:var(--accent3)">⚡ input: 10 และ 4</small>',
-    hint:'print(a - b)',
-    starterCode:'a = int(input())\nb = int(input())\n# คำนวณผลลบ แล้ว print\n',
-    expected:"6", inputs:["10","4"], type:"input" },
-
-  { id:13, chapter:null, title:"ข้อ 13 — คูณเลข", badge:"input", badgeClass:"badge-input",
-    desc:'รับตัวเลข 2 ตัว แล้วแสดงผลคูณ<br><small style="color:var(--accent3)">⚡ input: 6 และ 7</small>',
-    hint:'ใช้เครื่องหมาย * สำหรับคูณ',
-    starterCode:'a = int(input())\nb = int(input())\n# คำนวณผลคูณ แล้ว print\n',
-    expected:"42", inputs:["6","7"], type:"input" },
-
-  { id:14, chapter:null, title:"ข้อ 14 — หารเลข (ทศนิยม)", badge:"input", badgeClass:"badge-input",
-    desc:'รับตัวเลข 2 ตัว แล้วแสดงผลหาร<br><small style="color:var(--accent3)">⚡ input: 10 และ 4</small>',
-    hint:'ใช้ / สำหรับหาร → ได้ผลเป็นทศนิยม',
-    starterCode:'a = int(input())\nb = int(input())\n# คำนวณผลหาร แล้ว print\n',
-    expected:"2.5", inputs:["10","4"], type:"input" },
-
-  { id:15, chapter:null, title:"ข้อ 15 — หารปัดเศษ", badge:"input", badgeClass:"badge-input",
-    desc:'รับตัวเลข 2 ตัว แล้วแสดงผลหารแบบปัดเศษ (จำนวนเต็ม)<br><small style="color:var(--accent3)">⚡ input: 10 และ 3</small>',
-    hint:'ใช้ // (Floor Division) → 10 // 3 = 3',
-    starterCode:'a = int(input())\nb = int(input())\n# หารปัดเศษ แล้ว print\n',
-    expected:"3", inputs:["10","3"], type:"input" },
-
-  { id:16, chapter:null, title:"ข้อ 16 — หาเศษ (Modulo)", badge:"input", badgeClass:"badge-input",
-    desc:'รับตัวเลข 2 ตัว แล้วแสดงเศษจากการหาร<br><small style="color:var(--accent3)">⚡ input: 10 และ 3</small>',
-    hint:'ใช้ % → 10 % 3 = 1',
-    starterCode:'a = int(input())\nb = int(input())\n# หาเศษ แล้ว print\n',
-    expected:"1", inputs:["10","3"], type:"input" },
-
-  { id:17, chapter:null, title:"ข้อ 17 — ยกกำลัง", badge:"input", badgeClass:"badge-input",
-    desc:'รับตัวเลข 1 ตัว แล้วยกกำลัง 2<br><small style="color:var(--accent3)">⚡ input: 5</small>',
-    hint:'ใช้ ** → 5**2 = 25',
-    starterCode:'n = int(input())\n# ยกกำลัง 2 แล้ว print\n',
-    expected:"25", inputs:["5"], type:"input" },
-
-  { id:18, chapter:null, title:"ข้อ 18 — ค่าเฉลี่ย 3 ตัว", badge:"input", badgeClass:"badge-input",
-    desc:'รับตัวเลข 3 ตัว แล้วหาค่าเฉลี่ย<br><small style="color:var(--accent3)">⚡ input: 10, 20, 30</small>',
-    hint:'avg = (a + b + c) / 3  แล้ว print(avg)',
-    starterCode:'a = int(input())\nb = int(input())\nc = int(input())\n# หาค่าเฉลี่ย แล้ว print\n',
-    expected:"20.0", inputs:["10","20","30"], type:"input" },
-
-  { id:19, chapter:null, title:"ข้อ 19 — แปลงอุณหภูมิ", badge:"input", badgeClass:"badge-input",
-    desc:'รับเซลเซียส แปลงเป็นฟาเรนไฮต์ (F = C × 9/5 + 32)<br><small style="color:var(--accent3)">⚡ input: 100</small>',
-    hint:'f = c * 9/5 + 32  → ควรได้ 212.0',
-    starterCode:'c = int(input())\n# F = C * 9/5 + 32\n# print ผลลัพธ์\n',
-    expected:"212.0", inputs:["100"], type:"input" },
-
-  { id:20, chapter:null, title:"ข้อ 20 — พื้นที่สี่เหลี่ยม", badge:"input", badgeClass:"badge-input",
-    desc:'รับความกว้างและความยาว แล้วคำนวณพื้นที่<br><small style="color:var(--accent3)">⚡ input: 8 และ 5</small>',
-    hint:'area = width * length  → ควรได้ 40',
-    starterCode:'width = int(input())\nlength = int(input())\n# คำนวณพื้นที่ แล้ว print\n',
-    expected:"40", inputs:["8","5"], type:"input" },
-];
+// ── EXERCISES (โหลดจาก JSON) ───────────────────────────────
+let exercises = [];
 
 // ── STATE ──────────────────────────────────────────────────
 let currentIdx = 0;
@@ -748,11 +755,291 @@ function showStarBurst() {
   }
 }
 
+// ── JSON LOADER ────────────────────────────────────────────
+
+const DEFAULT_JSON_URL = 'https://raw.githubusercontent.com/Karibura-Cyber/python-playground/refs/heads/main/exercises.json';
+
+function validateExercise(ex) {
+  const required = ['id','title','badge','badgeClass','desc','hint','starterCode','expected'];
+  for (const f of required) {
+    if (ex[f] === undefined || ex[f] === null) return `ขาด field: "${f}"`;
+  }
+  if (typeof ex.id !== 'number') return `"id" ต้องเป็นตัวเลข`;
+  if (!Array.isArray(ex.inputs)) ex.inputs = [];
+  if (!ex.type) ex.type = 'custom';
+  if (ex.chapter === undefined) ex.chapter = null;
+  return null;
+}
+
+function mergeExercises(newExs) {
+  const existingIds = new Set(exercises.map(e => e.id));
+  let added = 0, skipped = 0, errors = [];
+  newExs.forEach((ex, i) => {
+    const err = validateExercise(ex);
+    if (err) { errors.push(`ข้อ ${i+1}: ${err}`); return; }
+    if (existingIds.has(ex.id)) { skipped++; return; }
+    exercises.push(ex);
+    existingIds.add(ex.id);
+    added++;
+  });
+  return { added, skipped, errors };
+}
+
+function rebuildAfterMerge() {
+  document.getElementById('sidebar').innerHTML = '';
+  buildSidebar();
+  document.getElementById('totalDisplay').textContent = exercises.length;
+  // If no exercise is selected yet (idx 0 might not exist), select first
+  if (exercises.length > 0 && document.getElementById('problemTitle').textContent === '') {
+    selectExercise(0);
+  }
+  updateProgress();
+}
+
+// ── TOAST SYSTEM ───────────────────────────────────────────
+let _toastId = 0;
+
+function showToast(msg, type = 'info', duration = 4000) {
+  // type: 'ok' | 'err' | 'info'
+  const container = document.getElementById('toast-container');
+  const id = ++_toastId;
+
+  const icons = { ok: '✓', err: '✕', info: 'ℹ' };
+
+  const el = document.createElement('div');
+  el.className = `toast toast-${type}`;
+  el.id = `toast-${id}`;
+  el.innerHTML = `
+    <span class="toast-icon">${icons[type] || icons.info}</span>
+    <span class="toast-msg">${msg}</span>
+    <button class="toast-close" onclick="dismissToast(${id})">✕</button>`;
+
+  container.appendChild(el);
+
+  // Trigger enter animation
+  requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('show')));
+
+  // Auto dismiss
+  const timer = setTimeout(() => dismissToast(id), duration);
+  el._timer = timer;
+
+  return id;
+}
+
+function dismissToast(id) {
+  const el = document.getElementById(`toast-${id}`);
+  if (!el) return;
+  clearTimeout(el._timer);
+  el.classList.remove('show');
+  el.classList.add('hide');
+  setTimeout(() => el.remove(), 280);
+}
+
+// Legacy alias used by save/load functions
+function showJsonStatus(msg, isOk) {
+  showToast(msg, isOk ? 'ok' : 'err');
+}
+
+async function loadDefaultJson() {
+  const btn = document.getElementById('reloadJsonBtn');
+  if (btn) { btn.textContent = '⏳ กำลังโหลด...'; btn.disabled = true; }
+  try {
+    const res = await fetch(DEFAULT_JSON_URL);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    if (!Array.isArray(data)) throw new Error('JSON ต้องเป็น array');
+
+    // Validate each exercise
+    const errors = [];
+    const valid = [];
+    data.forEach((ex, i) => {
+      const err = validateExercise(ex);
+      if (err) { errors.push(`ข้อ ${i+1}: ${err}`); return; }
+      valid.push(ex);
+    });
+
+    // Replace exercises with data from JSON (keep any extra loaded from file)
+    // Filter out exercises whose id exists in the new JSON, then push new ones
+    const newIds = new Set(valid.map(e => e.id));
+    exercises = exercises.filter(e => !newIds.has(e.id)); // remove old versions
+    exercises.push(...valid);
+    // Sort by id
+    exercises.sort((a, b) => a.id - b.id);
+
+    rebuildAfterMerge();
+
+    if (errors.length > 0) {
+      showToast(`โหลดแล้ว ${valid.length} ข้อ — ⚠️ ${errors.length} error`, 'err');
+    }
+    return valid.length;
+  } catch(e) {
+    showToast('❌ โหลดโจทย์ไม่ได้: ' + e.message, 'err');
+    return 0;
+  } finally {
+    if (btn) { btn.textContent = '🔄 โหลดโจทย์'; btn.disabled = false; }
+  }
+}
+
+function loadFromFile(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  event.target.value = '';
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!Array.isArray(data)) throw new Error('JSON ต้องเป็น array');
+      const { added, skipped, errors } = mergeExercises(data);
+      rebuildAfterMerge();
+      let msg = `"${file.name}": +${added} ข้อ`;
+      if (skipped > 0) msg += ` (ซ้ำ ${skipped})`;
+      showToast(msg, errors.length === 0 ? 'ok' : 'err');
+    } catch(e) {
+      showToast('❌ ' + e.message, 'err');
+    }
+  };
+  reader.onerror = () => showToast('❌ อ่านไฟล์ไม่ได้', 'err');
+  reader.readAsText(file, 'UTF-8');
+}
+
+// ── SAVE / LOAD PROGRESS (.mxr) ────────────────────────────
+// .mxr format: base64-encoded JSON with a magic header
+
+const MXR_MAGIC = 'PYADVMXR1';
+
+function collectCurrentCode() {
+  // Save current editor code for the active exercise
+  return monacoEditor ? monacoEditor.getValue() : '';
+}
+
+function saveProgress() {
+  document.getElementById('saveModal').style.display = 'flex';
+  setTimeout(() => document.getElementById('saveNameInput').focus(), 50);
+}
+
+function closeSaveModal() {
+  document.getElementById('saveModal').style.display = 'none';
+}
+
+function confirmSave() {
+  const studentName = document.getElementById('saveNameInput').value.trim() || 'ไม่ระบุชื่อ';
+  closeSaveModal();
+
+  // Build snapshot
+  const snapshot = {
+    magic: MXR_MAGIC,
+    version: 1,
+    savedAt: new Date().toISOString(),
+    studentName,
+    score,
+    currentIdx,
+    completed: [...completed],         // array of completed exercise indices
+    // Save code per exercise id: { [id]: code }
+    codes: {},
+  };
+
+  // Save current editor content for current exercise
+  if (monacoEditor) {
+    snapshot.codes[exercises[currentIdx].id] = monacoEditor.getValue();
+  }
+
+  // Encode to base64
+  const json = JSON.stringify(snapshot);
+  const b64 = btoa(unescape(encodeURIComponent(json)));
+  const blob = new Blob([b64], { type: 'application/octet-stream' });
+  const url = URL.createObjectURL(blob);
+
+  // Generate filename: progress_NAME_DATE.mxr
+  const dateStr = new Date().toISOString().slice(0,10);
+  const safeName = studentName.replace(/[^a-zA-Z0-9ก-๙]/g, '_').substring(0,20);
+  const filename = `progress_${safeName}_${dateStr}.mxr`;
+
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+
+  showJsonStatus(`💾 บันทึกแล้ว: ${filename}`, true);
+}
+
+function loadProgress(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  event.target.value = '';
+
+  if (!file.name.endsWith('.mxr')) {
+    showJsonStatus('❌ ไฟล์ต้องเป็น .mxr', false);
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      // Decode base64
+      const b64 = e.target.result.trim();
+      const json = decodeURIComponent(escape(atob(b64)));
+      const snapshot = JSON.parse(json);
+
+      // Validate magic
+      if (snapshot.magic !== MXR_MAGIC) throw new Error('ไฟล์ไม่ถูกต้องหรือเสียหาย');
+
+      // Restore state
+      score = snapshot.score || 0;
+      completed.clear();
+      (snapshot.completed || []).forEach(i => completed.add(i));
+
+      document.getElementById('scoreDisplay').textContent = score;
+
+      // Restore codes if available
+      if (snapshot.codes && snapshot.currentIdx !== undefined) {
+        const targetIdx = Math.min(snapshot.currentIdx, exercises.length - 1);
+        selectExercise(targetIdx);
+
+        // Restore code for current exercise
+        const exId = exercises[targetIdx].id;
+        if (snapshot.codes[exId] && monacoEditor) {
+          monacoEditor.setValue(snapshot.codes[exId]);
+        }
+      }
+
+      updateSidebar();
+      updateProgress();
+
+      const savedDate = snapshot.savedAt ? new Date(snapshot.savedAt).toLocaleDateString('th-TH') : '?';
+      showJsonStatus(`📂 โหลดแล้ว: ${snapshot.studentName} | ${score} คะแนน | ${savedDate}`, true);
+
+    } catch(e) {
+      showJsonStatus('❌ โหลดไม่ได้: ' + e.message, false);
+    }
+  };
+  reader.onerror = () => showJsonStatus('❌ อ่านไฟล์ไม่ได้', false);
+  reader.readAsText(file, 'UTF-8');
+}
+
 // ── INIT ───────────────────────────────────────────────────
-buildSidebar();
-selectExercise(0);
-setupInputHandling();
-loadPyodideEngine();
+(async () => {
+  setupInputHandling();
+
+  // โหลดโจทย์จาก JSON ก่อน แล้วค่อย render UI
+  await loadDefaultJson();
+
+  // ถ้าโหลดไม่ได้เลย แสดง placeholder
+  if (exercises.length === 0) {
+    document.getElementById('sidebar').innerHTML =
+      '<div style="padding:20px;color:var(--text2);font-size:0.8rem;text-align:center">⚠️ ยังไม่มีโจทย์<br>กด "โหลดโจทย์" หรือ "เพิ่มโจทย์"</div>';
+    document.getElementById('problemTitle').textContent = 'ยังไม่มีโจทย์';
+    document.getElementById('problemDesc').textContent = 'กด "โหลดโจทย์" ที่ navbar เพื่อโหลดจาก GitHub หรือ "เพิ่มโจทย์" เพื่อใช้ไฟล์ JSON ของคุณ';
+  } else {
+    buildSidebar();
+    selectExercise(0);
+  }
+
+  document.getElementById('totalDisplay').textContent = exercises.length;
+
+  // โหลด Pyodide ควบคู่กัน
+  loadPyodideEngine();
+})();
 </script>
 </body>
 </html>
