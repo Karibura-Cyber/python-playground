@@ -1,0 +1,1498 @@
+<!DOCTYPE html>
+<html lang="th" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🐍 Python Quiz Builder</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Noto+Sans+Thai:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
+<style>
+/* ===== RESET ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width:100%; height:100%; overflow:hidden; }
+
+/* ===== THEME TOKENS ===== */
+:root {
+  --font: 'Noto Sans Thai', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* accent colours stay constant across themes */
+  --acc:  #00c896;
+  --acc2: #7c6fff;
+  --acc3: #ff6b6b;
+  --acc4: #f5a623;
+}
+
+/* DARK */
+[data-theme="dark"] {
+  --bg:       #0d0f14;
+  --surf:     #161922;
+  --surf2:    #1e2330;
+  --surf3:    #131720;
+  --border:   #2a3045;
+  --txt:      #e8eaf0;
+  --txt2:     #8892a4;
+  --txt3:     #4a5568;
+  --shadow:   rgba(0,0,0,.4);
+  --glow-a:   rgba(0,200,150,.055);
+  --glow-b:   rgba(124,111,255,.055);
+  --code-bg:  #0a0c10;
+  --code-txt: #ffd93d;
+  --code-bdr: rgba(255,217,61,.2);
+  --out-dim:  #3a4558;
+  --header-bg: rgba(13,15,20,.93);
+}
+
+/* LIGHT */
+[data-theme="light"] {
+  --bg:       #f0f2f7;
+  --surf:     #ffffff;
+  --surf2:    #f5f6fa;
+  --surf3:    #eef0f6;
+  --border:   #d4d9e8;
+  --txt:      #1a1e2e;
+  --txt2:     #5a6282;
+  --txt3:     #9aa0b8;
+  --shadow:   rgba(0,0,0,.12);
+  --glow-a:   rgba(0,200,150,.07);
+  --glow-b:   rgba(124,111,255,.07);
+  --code-bg:  #1e2230;
+  --code-txt: #ffd93d;
+  --code-bdr: rgba(255,217,61,.3);
+  --out-dim:  #9aa0b8;
+  --header-bg: rgba(255,255,255,.92);
+}
+
+body {
+  font-family: var(--font);
+  background: var(--bg); color: var(--txt);
+  display: flex; flex-direction: column;
+  transition: background .25s, color .25s;
+}
+body::before {
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+  background:
+    radial-gradient(ellipse 80% 60% at 15% -10%, var(--glow-a) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 85% 110%, var(--glow-b) 0%, transparent 60%);
+}
+
+* { scrollbar-width:thin; scrollbar-color:var(--border) transparent; }
+::-webkit-scrollbar { width:4px; height:4px; }
+::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+
+/* ===== HEADER ===== */
+header {
+  position:relative; z-index:20; flex-shrink:0;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 18px; height:50px;
+  border-bottom:1px solid var(--border);
+  background:var(--header-bg); backdrop-filter:blur(14px);
+  transition:background .25s, border-color .25s;
+}
+.logo {
+  display:flex; align-items:center; gap:8px;
+  font-family:var(--font); font-weight:800; font-size:1.05rem; letter-spacing:-.3px;
+}
+.logo em { color:var(--acc); font-style:normal; }
+.hdr-r { display:flex; gap:6px; align-items:center; }
+
+/* Pyodide status */
+.py-stat { display:flex; align-items:center; gap:5px; font-size:.67rem; color:var(--txt3); font-family:var(--font-mono); padding:0 6px; }
+.sdot { width:7px; height:7px; border-radius:50%; background:var(--txt3); flex-shrink:0; transition:background .3s; }
+.sdot.loading { background:var(--acc4); animation:blink 1s infinite; }
+.sdot.ready   { background:var(--acc); }
+.sdot.error   { background:var(--acc3); }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+/* ===== THEME TOGGLE ===== */
+.theme-toggle {
+  display:flex; align-items:center; gap:5px;
+  background:var(--surf2); border:1px solid var(--border);
+  border-radius:20px; padding:3px 10px 3px 6px;
+  cursor:pointer; transition:all .2s; user-select:none;
+  font-size:.7rem; color:var(--txt2); font-family:var(--font); font-weight:600;
+}
+.theme-toggle:hover { border-color:var(--acc2); color:var(--acc2); }
+.theme-toggle .tt-track {
+  width:30px; height:16px;
+  background:var(--border); border-radius:99px;
+  position:relative; transition:background .2s; flex-shrink:0;
+}
+.theme-toggle .tt-thumb {
+  position:absolute; top:2px; left:2px;
+  width:12px; height:12px; border-radius:50%;
+  background:#fff; transition:transform .2s, background .2s;
+  box-shadow:0 1px 3px rgba(0,0,0,.3);
+}
+[data-theme="light"] .tt-track { background:var(--acc2); }
+[data-theme="light"] .tt-thumb { transform:translateX(14px); }
+
+/* ===== ROOT ===== */
+.root { position:relative; z-index:1; flex:1; display:flex; overflow:hidden; min-height:0; }
+
+/* ===== SIDEBAR ===== */
+.sidebar {
+  display:flex; flex-direction:column;
+  background:var(--surf); border-right:1px solid var(--border);
+  overflow:hidden; flex-shrink:0;
+  width:270px; min-width:44px; max-width:480px;
+  transition:width .2s cubic-bezier(.4,0,.2,1), background .25s, border-color .25s;
+}
+.sidebar.collapsed { width:44px !important; }
+.sb-head { display:flex; align-items:center; gap:6px; padding:9px; flex-shrink:0; border-bottom:1px solid var(--border); min-height:46px; overflow:hidden; }
+.sb-meta { display:flex; align-items:center; gap:6px; flex:1; overflow:hidden; transition:opacity .15s; }
+.sidebar.collapsed .sb-meta, .sidebar.collapsed .q-list { opacity:0; pointer-events:none; }
+.sb-title { font-family:var(--font); font-weight:700; font-size:.78rem; text-transform:uppercase; letter-spacing:1.2px; color:var(--txt2); white-space:nowrap; flex:1; }
+.q-list { flex:1; overflow-y:auto; padding:5px; transition:opacity .15s; }
+.q-ch { font-size:.65rem; color:var(--acc); font-weight:700; padding:9px 7px 3px; border-top:1px solid var(--border); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.q-ch:first-child { border-top:none; margin-top:0; }
+.q-item { padding:7px 9px; border-radius:7px; cursor:pointer; margin-bottom:2px; border:1px solid transparent; transition:all .1s; position:relative; overflow:hidden; }
+.q-item:hover  { background:var(--surf2); border-color:var(--border); }
+.q-item.active { background:rgba(0,200,150,.1); border-color:rgba(0,200,150,.3); }
+.q-row { display:flex; align-items:center; gap:5px; }
+.q-num  { font-family:var(--font-mono); font-size:.6rem; color:var(--txt3); min-width:16px; flex-shrink:0; }
+.q-name { font-size:.8rem; color:var(--txt); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1; }
+.q-badge { font-size:.58rem; padding:2px 6px; border-radius:99px; font-family:var(--font-mono); font-weight:700; text-transform:uppercase; flex-shrink:0; }
+.badge-print  { background:rgba(245,166,35,.15); color:var(--acc4); }
+.badge-var    { background:rgba(124,111,255,.15); color:var(--acc2); }
+.badge-input  { background:rgba(0,200,150,.15); color:var(--acc); }
+.badge-if     { background:rgba(255,107,107,.15); color:var(--acc3); }
+.badge-loop   { background:rgba(100,200,255,.15); color:#5abaff; }
+.badge-fn     { background:rgba(255,150,50,.15); color:#ff9632; }
+.badge-custom { background:rgba(150,150,150,.15); color:var(--txt3); }
+.q-del { position:absolute; right:4px; top:50%; transform:translateY(-50%); opacity:0; background:rgba(255,107,107,.12); border:none; color:var(--acc3); width:18px; height:18px; border-radius:4px; cursor:pointer; font-size:.65rem; display:flex; align-items:center; justify-content:center; transition:all .1s; }
+.q-item:hover .q-del { opacity:1; }
+.q-del:hover { background:rgba(255,107,107,.35); }
+.cnt-badge { background:var(--surf2); border:1px solid var(--border); border-radius:99px; padding:1px 6px; font-family:var(--font-mono); font-size:.6rem; color:var(--txt2); white-space:nowrap; }
+
+/* ===== RESIZERS ===== */
+.resizer { flex-shrink:0; background:transparent; position:relative; z-index:5; }
+.resizer.v { width:5px; cursor:col-resize; }
+.resizer::after { content:''; position:absolute; background:var(--border); transition:background .15s; }
+.resizer.v::after { top:0; bottom:0; left:2px; width:1px; }
+.resizer:hover::after, .resizer.dragging::after { background:var(--acc2); }
+.resizer.v:hover::after, .resizer.v.dragging::after { width:3px; left:1px; }
+
+/* ===== MAIN ===== */
+.main { flex:1; display:flex; flex-direction:column; overflow:hidden; min-width:0; }
+.empty-st { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; color:var(--txt3); }
+.empty-ic { font-size:2.4rem; opacity:.28; }
+
+/* ===== EDITOR AREA ===== */
+#editorMain { flex:1; display:flex; overflow:hidden; min-height:0; }
+
+/* ===== FORM PANE ===== */
+.form-pane {
+  display:flex; flex-direction:column;
+  overflow:hidden; flex-shrink:0;
+  width:310px; min-width:180px; max-width:520px;
+  border-right:1px solid var(--border);
+  background:var(--surf); transition:background .25s, border-color .25s;
+}
+.ph { display:flex; align-items:center; justify-content:space-between; padding:7px 12px; flex-shrink:0; border-bottom:1px solid var(--border); background:var(--surf); gap:8px; min-height:40px; transition:background .25s, border-color .25s; }
+.ph-title { font-family:var(--font); font-size:.7rem; font-weight:700; color:var(--txt2); text-transform:uppercase; letter-spacing:.8px; display:flex; align-items:center; gap:5px; white-space:nowrap; }
+.dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+.dg { background:var(--acc); }
+.form-sc { flex:1; overflow-y:auto; padding:12px; display:flex; flex-direction:column; gap:9px; }
+
+/* FORM FIELDS */
+.field { display:flex; flex-direction:column; gap:4px; }
+.f2 { display:grid; grid-template-columns:1fr 1fr; gap:7px; }
+label { font-size:.68rem; color:var(--txt2); font-weight:600; text-transform:uppercase; letter-spacing:.6px; display:flex; align-items:center; gap:3px; font-family:var(--font); }
+.req { color:var(--acc3); }
+.ln { font-weight:400; text-transform:none; letter-spacing:0; color:var(--txt3); }
+
+input[type="text"], input[type="number"], textarea, select {
+  background:var(--surf2); border:1px solid var(--border); color:var(--txt);
+  border-radius:7px; padding:6px 9px; font-size:.82rem;
+  font-family:var(--font); outline:none; width:100%;
+  transition:border-color .12s, box-shadow .12s, background .25s;
+}
+input:focus, textarea:focus, select:focus { border-color:var(--acc); box-shadow:0 0 0 2px rgba(0,200,150,.12); }
+select option { background:var(--surf2); color:var(--txt); }
+textarea { resize:vertical; min-height:48px; font-size:.8rem; line-height:1.55; }
+textarea.code-ta {
+  font-family:var(--font-mono); font-size:.73rem; min-height:80px;
+  color:var(--code-txt); background:var(--code-bg); border-color:var(--code-bdr);
+}
+textarea.code-ta:focus { border-color:var(--acc4); box-shadow:0 0 0 2px rgba(245,166,35,.1); }
+.sep { height:1px; background:var(--border); margin:2px 0; transition:background .25s; }
+.sec { font-size:.62rem; text-transform:uppercase; letter-spacing:1px; color:var(--txt3); font-weight:700; font-family:var(--font); }
+.inputs-box { background:var(--surf2); border:1px solid var(--border); border-radius:7px; overflow:hidden; transition:background .25s; }
+.in-list { padding:5px; display:flex; flex-direction:column; gap:3px; }
+.in-row { display:flex; align-items:center; gap:4px; }
+.in-row input { font-family:var(--font-mono); font-size:.74rem; }
+.add-in { width:100%; background:transparent; border:none; border-top:1px solid var(--border); color:var(--acc); padding:5px; cursor:pointer; font-size:.73rem; font-family:var(--font); transition:background .12s; }
+.add-in:hover { background:rgba(0,200,150,.06); }
+
+/* ===== PLAYGROUND PANE ===== */
+.playground-pane {
+  flex:1; display:flex; flex-direction:column;
+  overflow:hidden; min-width:0; background:var(--bg);
+  position:relative; transition:background .25s;
+}
+.playground-pane.fullscreen {
+  position:fixed !important; inset:0 !important;
+  z-index:50 !important; width:100% !important; height:100% !important;
+}
+
+/* PG HEADER */
+.pg-header {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 14px; height:42px; flex-shrink:0;
+  border-bottom:1px solid var(--border);
+  background:var(--surf); gap:8px;
+  transition:background .25s, border-color .25s;
+}
+.pg-tabs { display:flex; gap:2px; align-items:center; }
+.pg-tab {
+  padding:5px 13px; border-radius:6px;
+  font-size:.74rem; font-family:var(--font); font-weight:600;
+  cursor:pointer; border:1px solid transparent;
+  transition:all .12s; color:var(--txt2); white-space:nowrap;
+}
+.pg-tab:hover { color:var(--txt); background:var(--surf2); }
+.pg-tab.active { background:rgba(0,200,150,.1); border-color:rgba(0,200,150,.28); color:var(--acc); }
+.pg-header-right { display:flex; align-items:center; gap:6px; }
+
+/* icon-style header buttons */
+.hdr-icon-btn {
+  background:transparent; border:1px solid var(--border);
+  color:var(--txt2); padding:4px 9px; border-radius:6px;
+  cursor:pointer; font-size:.72rem; transition:all .14s;
+  display:flex; align-items:center; gap:4px;
+  font-family:var(--font); font-weight:600; white-space:nowrap;
+}
+.hdr-icon-btn:hover { border-color:var(--acc2); color:var(--acc2); background:rgba(124,111,255,.08); }
+.hdr-icon-btn.active-danger { color:var(--acc3); border-color:rgba(255,107,107,.4); }
+.hdr-icon-btn.active-danger:hover { background:rgba(255,107,107,.08); }
+
+/* ===== PREVIEW PANEL (question info) ===== */
+/* when preview is hidden, pqHeader collapses to 0 and h-resizer hides */
+#pqHeader {
+  flex-shrink:0; overflow-y:auto;
+  max-height:45%; min-height:0;
+  border-bottom:1px solid var(--border);
+  background:var(--surf3);
+  transition:max-height .22s cubic-bezier(.4,0,.2,1), border-color .25s, background .25s;
+}
+#pqHeader.hidden { max-height:0 !important; border-bottom:none; overflow:hidden; }
+
+.h-resizer {
+  height:5px; flex-shrink:0; cursor:row-resize;
+  background:transparent; position:relative; z-index:5;
+  transition:opacity .2s;
+}
+.h-resizer.hidden { height:0; opacity:0; pointer-events:none; }
+.h-resizer::after { content:''; position:absolute; left:0; right:0; top:2px; height:1px; background:var(--border); transition:background .15s; }
+.h-resizer:hover::after, .h-resizer.dragging::after { background:var(--acc2); height:3px; top:1px; }
+
+/* ===== PLAYGROUND UI (mimics real quiz) ===== */
+.pq-header {
+  padding:16px 20px 14px;
+  background:linear-gradient(135deg, rgba(0,200,150,.04) 0%, transparent 70%);
+}
+.pq-meta { display:flex; align-items:center; gap:8px; margin-bottom:9px; flex-wrap:wrap; }
+.pq-badge { font-size:.63rem; padding:3px 9px; border-radius:99px; font-family:var(--font-mono); font-weight:700; text-transform:uppercase; }
+.pq-chapter { font-size:.63rem; color:var(--acc); font-weight:700; background:rgba(0,200,150,.08); border:1px solid rgba(0,200,150,.22); border-radius:99px; padding:2px 9px; font-family:var(--font-mono); }
+.pq-title { font-family:var(--font); font-weight:800; font-size:1.05rem; color:var(--txt); margin-bottom:6px; line-height:1.35; }
+.pq-desc { font-size:.85rem; color:var(--txt2); line-height:1.68; }
+.pq-desc b, .pq-desc strong { color:var(--txt); font-weight:700; }
+.pq-desc code { background:rgba(0,200,150,.1); color:var(--acc); border-radius:4px; padding:1px 5px; font-family:var(--font-mono); font-size:.79rem; }
+
+.pq-hint-wrap { margin-top:12px; }
+.pq-hint-btn {
+  display:inline-flex; align-items:center; gap:5px;
+  background:rgba(245,166,35,.08); border:1px solid rgba(245,166,35,.22);
+  color:var(--acc4); border-radius:8px; padding:5px 12px;
+  font-size:.77rem; cursor:pointer; user-select:none;
+  font-family:var(--font); font-weight:600; transition:all .12s;
+}
+.pq-hint-btn:hover { background:rgba(245,166,35,.15); }
+.pq-hint-body {
+  margin-top:9px; background:rgba(124,111,255,.07);
+  border:1px solid rgba(124,111,255,.18); border-radius:8px;
+  padding:11px 14px; font-family:var(--font-mono);
+  font-size:.77rem; color:var(--acc2); line-height:1.65;
+  white-space:pre-wrap; word-break:break-all;
+}
+
+.pq-inputs { margin-top:10px; display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+.pq-inputs-lbl { font-size:.65rem; color:var(--acc4); font-family:var(--font-mono); font-weight:700; text-transform:uppercase; }
+.pq-chip { background:rgba(245,166,35,.1); color:var(--acc4); border:1px solid rgba(245,166,35,.22); border-radius:5px; padding:2px 8px; font-family:var(--font-mono); font-size:.72rem; }
+
+/* Editor bar (mac dots) */
+.pq-editor-bar {
+  display:flex; align-items:center; gap:8px; padding:8px 14px;
+  background:rgba(0,0,0,.18); border-bottom:1px solid var(--border);
+  flex-shrink:0;
+}
+[data-theme="light"] .pq-editor-bar { background:rgba(0,0,0,.05); }
+.pq-dots { display:flex; gap:5px; }
+.pq-dot { width:9px; height:9px; border-radius:50%; }
+.pq-dot-r { background:#ff5f57; }
+.pq-dot-y { background:#ffc02d; }
+.pq-dot-g { background:#28c941; }
+.pq-filename { font-family:var(--font-mono); font-size:.72rem; color:var(--txt2); }
+.pq-out-dot { width:7px; height:7px; border-radius:50%; background:var(--acc); box-shadow:0 0 5px var(--acc); }
+.pq-out-label { font-family:var(--font-mono); font-size:.72rem; color:var(--txt2); }
+
+/* Code + output cols */
+.pq-code-col {
+  flex:1; overflow:auto; font-family:var(--font-mono); font-size:.78rem;
+  line-height:1.75; padding:10px 14px; color:var(--code-txt);
+  background:var(--code-bg); border-right:1px solid var(--border);
+  white-space:pre;
+}
+.pq-code-col .cm  { color:#4a6080; font-style:italic; }
+.pq-code-col .kw  { color:var(--acc2); }
+.pq-code-col .str { color:var(--acc); }
+.pq-code-col .num { color:var(--acc4); }
+
+.pq-out-col {
+  flex:1; overflow:auto; padding:10px 14px;
+  font-family:var(--font-mono); font-size:.78rem;
+  line-height:1.75; color:var(--out-dim);
+  background:var(--code-bg); white-space:pre-wrap;
+}
+
+/* Bottom action bar */
+.pq-footer {
+  display:flex; align-items:center; gap:8px;
+  padding:10px 16px; border-top:1px solid var(--border);
+  background:var(--surf); flex-shrink:0; flex-wrap:wrap;
+  transition:background .25s, border-color .25s;
+}
+.pg-run-btn {
+  display:flex; align-items:center; gap:6px;
+  background:var(--acc2); color:#fff; border:none;
+  border-radius:8px; padding:8px 16px;
+  font-family:var(--font); font-weight:700; font-size:.8rem;
+  cursor:pointer; transition:all .12s; white-space:nowrap;
+}
+.pg-run-btn:hover { filter:brightness(1.1); transform:translateY(-1px); }
+.pg-run-btn:disabled { opacity:.4; cursor:not-allowed; transform:none; }
+.pg-check-btn {
+  display:flex; align-items:center; gap:6px;
+  background:linear-gradient(135deg,#e040fb,#aa00ff); color:#fff;
+  border:none; border-radius:8px; padding:8px 16px;
+  font-family:var(--font); font-weight:700; font-size:.8rem;
+  cursor:pointer; transition:all .12s; white-space:nowrap;
+}
+.pg-check-btn:hover { filter:brightness(1.1); transform:translateY(-1px); }
+.pg-check-btn:disabled { opacity:.4; cursor:not-allowed; transform:none; }
+.pg-clear-btn {
+  display:flex; align-items:center; gap:5px;
+  background:var(--surf2); color:var(--txt2);
+  border:1px solid var(--border); border-radius:8px; padding:8px 13px;
+  font-family:var(--font); font-weight:600; font-size:.8rem;
+  cursor:pointer; transition:all .12s; white-space:nowrap;
+}
+.pg-clear-btn:hover { border-color:var(--acc3); color:var(--acc3); }
+.pg-result {
+  flex:1; font-family:var(--font-mono); font-size:.75rem;
+  color:var(--txt3); text-align:right; white-space:nowrap;
+  overflow:hidden; text-overflow:ellipsis; min-width:0;
+}
+.pg-result.ok  { color:var(--acc); }
+.pg-result.err { color:var(--acc3); }
+
+/* Monaco wrap */
+.monaco-wrap { flex:1; min-height:0; position:relative; overflow:hidden; }
+
+/* Raw output */
+.out-inline {
+  flex:1; font-family:var(--font-mono); font-size:.73rem;
+  color:var(--txt2); background:var(--surf2); border:1px solid var(--border);
+  border-radius:6px; padding:5px 10px; min-height:32px; max-height:60px;
+  overflow-y:auto; white-space:pre-wrap; transition:border-color .2s, color .2s, background .25s;
+}
+.out-inline.ok  { border-color:var(--acc);  color:var(--acc); }
+.out-inline.err { border-color:var(--acc3); color:var(--acc3); }
+.out-inline.run { border-color:var(--acc4); color:var(--acc4); }
+
+/* ===== BUTTONS (builder) ===== */
+.btn { display:inline-flex; align-items:center; gap:4px; padding:6px 12px; border-radius:7px; font-size:.76rem; font-family:var(--font); font-weight:700; cursor:pointer; border:none; transition:all .12s; white-space:nowrap; }
+.btn-sm { padding:4px 9px; font-size:.7rem; border-radius:6px; }
+.bp { background:var(--acc); color:#fff; } .bp:hover { filter:brightness(1.08); }
+.bs { background:transparent; color:var(--txt2); border:1px solid var(--border); } .bs:hover { border-color:var(--acc2); color:var(--acc2); background:rgba(124,111,255,.08); }
+.bd { background:transparent; color:var(--acc3); border:1px solid rgba(255,107,107,.3); } .bd:hover { background:rgba(255,107,107,.1); }
+.bx { background:linear-gradient(135deg,var(--acc),#00a07a); color:#fff; }
+.ic-btn { background:transparent; border:1px solid var(--border); color:var(--txt2); width:24px; height:24px; border-radius:5px; cursor:pointer; font-size:.68rem; display:flex; align-items:center; justify-content:center; transition:all .12s; flex-shrink:0; }
+.ic-btn:hover { border-color:var(--acc3); color:var(--acc3); background:rgba(255,107,107,.1); }
+.col-btn { background:transparent; border:1px solid var(--border); color:var(--txt2); width:24px; height:24px; border-radius:5px; cursor:pointer; font-size:.7rem; display:flex; align-items:center; justify-content:center; transition:all .12s; flex-shrink:0; }
+.col-btn:hover { border-color:var(--acc); color:var(--acc); background:rgba(0,200,150,.08); }
+.col-ic { transition:transform .2s; display:inline-block; line-height:1; }
+.sidebar.collapsed .col-ic { transform:rotate(180deg); }
+
+/* ===== TOAST ===== */
+.toast-w { position:fixed; bottom:16px; right:16px; z-index:9999; display:flex; flex-direction:column; gap:5px; pointer-events:none; }
+.toast { background:var(--surf); border:1px solid var(--border); padding:9px 14px; border-radius:9px; font-size:.78rem; display:flex; align-items:center; gap:6px; animation:tIn .18s ease; box-shadow:0 4px 18px var(--shadow); pointer-events:auto; font-family:var(--font); }
+.toast.ok  { border-color:var(--acc); }
+.toast.err { border-color:var(--acc3); }
+@keyframes tIn { from{transform:translateX(18px);opacity:0} to{transform:translateX(0);opacity:1} }
+
+/* ===== MODAL ===== */
+.mo { position:fixed; inset:0; background:rgba(0,0,0,.65); z-index:100; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(5px); animation:mFd .18s; }
+@keyframes mFd { from{opacity:0} to{opacity:1} }
+.modal { background:var(--surf); border:1px solid var(--border); border-radius:12px; padding:20px; width:90%; max-width:540px; max-height:80vh; overflow-y:auto; animation:mPp .18s ease; font-family:var(--font); }
+@keyframes mPp { from{transform:scale(.95);opacity:0} to{transform:scale(1);opacity:1} }
+.modal h2 { font-family:var(--font); font-weight:800; font-size:.95rem; margin-bottom:12px; }
+.modal pre { background:var(--bg); border:1px solid var(--border); border-radius:7px; padding:12px; font-family:var(--font-mono); font-size:.67rem; overflow:auto; max-height:370px; color:var(--acc); line-height:1.6; }
+.mft { display:flex; gap:6px; justify-content:flex-end; margin-top:12px; }
+
+/* ===== TEST CASES ===== */
+.tc-box {
+  background: var(--surf2); border: 1px solid var(--border);
+  border-radius: 7px; overflow: hidden; transition: background .25s, border-color .25s;
+}
+.tc-item {
+  border-bottom: 1px solid var(--border); overflow: hidden;
+  transition: border-color .25s;
+}
+.tc-item:last-child { border-bottom: none; }
+.tc-head {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 8px; cursor: pointer; user-select: none;
+  background: transparent; border: none; width: 100%;
+  text-align: left; transition: background .12s;
+}
+.tc-head:hover { background: rgba(0,200,150,.05); }
+.tc-num {
+  font-family: var(--font-mono); font-size: .6rem; font-weight: 700;
+  background: var(--surf3); color: var(--acc); border-radius: 4px;
+  padding: 1px 6px; flex-shrink: 0; border: 1px solid rgba(0,200,150,.2);
+}
+.tc-preview {
+  font-family: var(--font-mono); font-size: .68rem; color: var(--txt2);
+  flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.tc-status {
+  font-size: .65rem; flex-shrink: 0; min-width: 14px; text-align: center;
+}
+.tc-caret { font-size: .55rem; color: var(--txt3); flex-shrink: 0; transition: transform .18s; }
+.tc-item.open .tc-caret { transform: rotate(90deg); }
+.tc-body {
+  display: none; padding: 7px 8px 8px;
+  border-top: 1px solid var(--border);
+  background: var(--surf3); gap: 6px;
+  flex-direction: column; transition: background .25s;
+}
+.tc-item.open .tc-body { display: flex; }
+.tc-body-label {
+  font-size: .6rem; color: var(--txt3); font-weight: 700;
+  text-transform: uppercase; letter-spacing: .5px; margin-bottom: 2px;
+}
+.tc-inlist { display: flex; flex-direction: column; gap: 3px; margin-bottom: 4px; }
+.tc-in-row { display: flex; align-items: center; gap: 4px; }
+.tc-in-row input { font-family: var(--font-mono); font-size: .72rem; flex: 1; }
+.tc-expected-input {
+  font-family: var(--font-mono); font-size: .72rem;
+  background: var(--surf2); border: 1px solid var(--border);
+  color: var(--acc); border-radius: 6px; padding: 5px 8px;
+  resize: vertical; min-height: 38px; width: 100%; outline: none;
+  transition: border-color .12s, box-shadow .12s;
+}
+.tc-expected-input:focus { border-color: var(--acc); box-shadow: 0 0 0 2px rgba(0,200,150,.12); }
+.tc-del-btn {
+  background: transparent; border: 1px solid rgba(255,107,107,.3);
+  color: var(--acc3); border-radius: 5px; padding: 3px 8px;
+  cursor: pointer; font-size: .65rem; font-family: var(--font);
+  font-weight: 600; transition: all .12s; margin-top: 2px; align-self: flex-end;
+}
+.tc-del-btn:hover { background: rgba(255,107,107,.12); }
+.tc-add-btn {
+  width: 100%; background: transparent; border: none;
+  border-top: 1px solid var(--border); color: var(--acc2);
+  padding: 6px; cursor: pointer; font-size: .72rem;
+  font-family: var(--font); transition: background .12s;
+}
+.tc-add-btn:hover { background: rgba(124,111,255,.07); }
+.tc-run-row {
+  display: flex; align-items: center; gap: 5px;
+  padding: 6px 8px 6px; border-top: 1px solid var(--border);
+  background: var(--surf); flex-wrap: wrap; flex-shrink: 0;
+}
+.tc-run-btn {
+  display: flex; align-items: center; gap: 5px;
+  background: rgba(124,111,255,.15); border: 1px solid rgba(124,111,255,.3);
+  color: var(--acc2); border-radius: 7px; padding: 5px 11px;
+  font-family: var(--font); font-weight: 700; font-size: .73rem;
+  cursor: pointer; transition: all .12s; white-space: nowrap;
+}
+.tc-run-btn:hover { background: rgba(124,111,255,.28); }
+.tc-run-btn:disabled { opacity: .4; cursor: not-allowed; }
+.tc-result-badge {
+  font-family: var(--font-mono); font-size: .67rem;
+  padding: 2px 8px; border-radius: 5px; font-weight: 700;
+}
+.tc-result-badge.pass { background: rgba(0,200,150,.12); color: var(--acc); border: 1px solid rgba(0,200,150,.3); }
+.tc-result-badge.fail { background: rgba(255,107,107,.12); color: var(--acc3); border: 1px solid rgba(255,107,107,.3); }
+.tc-summary { font-family: var(--font-mono); font-size: .67rem; color: var(--txt2); flex: 1; text-align: right; }
+
+/* ===== SPLASH ===== */
+#splash { position:fixed; inset:0; z-index:200; background:var(--bg); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; transition:background .25s; }
+.sp-logo { font-family:var(--font); font-weight:800; font-size:1.5rem; display:flex; gap:7px; align-items:center; }
+.sp-logo em { color:var(--acc); font-style:normal; }
+.sp-bw { width:200px; height:3px; background:var(--surf2); border-radius:99px; overflow:hidden; }
+.sp-b { height:100%; width:35%; background:var(--acc); border-radius:99px; animation:spS 1.4s ease-in-out infinite; }
+@keyframes spS { 0%{transform:translateX(-100%)} 60%{transform:translateX(300%)} 100%{transform:translateX(300%)} }
+.sp-t { font-size:.73rem; color:var(--txt3); font-family:var(--font-mono); }
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splash">
+  <div class="sp-logo">🐍 <em>Quiz</em>Builder</div>
+  <div class="sp-bw"><div class="sp-b"></div></div>
+  <div class="sp-t" id="spTxt">กำลังโหลดโจทย์จาก GitHub...</div>
+</div>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">🐍 <em>Quiz</em>Builder</div>
+  <div class="hdr-r">
+    <div class="py-stat">
+      <div class="sdot loading" id="sdot"></div>
+      <span id="stxt">โหลด Pyodide...</span>
+    </div>
+    <!-- THEME TOGGLE -->
+    <div class="theme-toggle" onclick="toggleTheme()" title="สลับ Dark / Light">
+      <div class="tt-track"><div class="tt-thumb"></div></div>
+      <span id="themeLabel">Dark</span>
+    </div>
+    <button class="btn btn-sm bs" onclick="importJSON()">📂 Import</button>
+    <button class="btn btn-sm bx" onclick="showExport()">📤 Export</button>
+  </div>
+</header>
+
+<!-- ROOT -->
+<div class="root">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sb-head">
+      <button class="col-btn" onclick="toggleSb()" title="Ctrl+B"><span class="col-ic">◀</span></button>
+      <div class="sb-meta">
+        <span class="sb-title">โจทย์</span>
+        <span class="cnt-badge" id="qCount">0</span>
+        <button class="btn btn-sm bp" onclick="newQ()" style="padding:3px 7px">+</button>
+      </div>
+    </div>
+    <div class="q-list" id="qList">
+      <div style="padding:28px 8px;text-align:center;color:var(--txt3);font-size:.73rem;">
+        <div style="font-size:1.7rem;margin-bottom:7px;opacity:.28">📝</div>กำลังโหลด...
+      </div>
+    </div>
+  </aside>
+
+  <div class="resizer v" id="rSb"></div>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <div class="empty-st" id="emptyMain">
+      <div class="empty-ic">🎯</div>
+      <div style="color:var(--txt2);font-size:.85rem">เลือกหรือสร้างโจทย์</div>
+      <button class="btn btn-sm bp" onclick="newQ()">+ สร้างโจทย์แรก</button>
+    </div>
+
+    <div id="editorMain" style="display:none;flex:1;overflow:hidden;min-height:0;">
+
+      <!-- FORM PANE -->
+      <div class="form-pane" id="formPane">
+        <div class="ph">
+          <div class="ph-title"><div class="dot dg"></div>รายละเอียด</div>
+          <div style="display:flex;gap:5px">
+            <button class="btn btn-sm bd" onclick="delQ()">🗑</button>
+            <button class="btn btn-sm bp" onclick="saveQ()">💾 บันทึก</button>
+          </div>
+        </div>
+        <div class="form-sc">
+          <div class="sec">ข้อมูลทั่วไป</div>
+          <div class="f2">
+            <div class="field"><label>ID <span class="req">*</span></label><input type="number" id="f-id" placeholder="1" oninput="lp()"></div>
+            <div class="field"><label>Type</label>
+              <select id="f-type" onchange="syncBadge();lp()">
+                <option value="print">print</option><option value="var">var</option>
+                <option value="input">input</option><option value="if">if</option>
+                <option value="loop">loop</option><option value="fn">fn</option>
+                <option value="custom">custom</option>
+              </select>
+            </div>
+          </div>
+          <div class="field"><label>Chapter <span class="ln">(ถ้าเป็นต้นบท)</span></label><input type="text" id="f-chapter" placeholder="🖨️ บทที่ 1: ..." oninput="lp()"></div>
+          <div class="field"><label>Title <span class="req">*</span></label><input type="text" id="f-title" placeholder="ข้อ 1 — Hello, World!" oninput="lp()"></div>
+          <div class="f2">
+            <div class="field"><label>Badge text</label><input type="text" id="f-badge" placeholder="print" oninput="lp()"></div>
+            <div class="field"><label>Badge style</label>
+              <select id="f-badgeClass" onchange="lp()">
+                <option value="badge-print">print (เหลือง)</option>
+                <option value="badge-var">var (ม่วง)</option>
+                <option value="badge-input">input (เขียว)</option>
+                <option value="badge-if">if (แดง)</option>
+                <option value="badge-loop">loop (ฟ้า)</option>
+                <option value="badge-fn">fn (ส้ม)</option>
+                <option value="badge-custom">custom (เทา)</option>
+              </select>
+            </div>
+          </div>
+          <div class="sep"></div>
+          <div class="sec">เนื้อหา</div>
+          <div class="field"><label>Desc <span class="req">*</span> <span class="ln">รองรับ HTML</span></label><textarea id="f-desc" rows="3" placeholder="เขียนโปรแกรมแสดง &lt;b&gt;Hello&lt;/b&gt;" oninput="lp()"></textarea></div>
+          <div class="field"><label>Hint</label><textarea id="f-hint" rows="2" placeholder='print("Hello")' oninput="lp()"></textarea></div>
+          <div class="sep"></div>
+          <div class="sec">Starter Code <span class="ln" style="font-size:.57rem;letter-spacing:0">โค้ดเริ่มต้น</span></div>
+          <div class="field"><textarea id="f-starter" class="code-ta" rows="5" placeholder="# เขียนโปรแกรมของคุณที่นี่&#10;" oninput="lp()"></textarea></div>
+          <div class="sep"></div>
+          <div class="sec">ทดสอบ</div>
+          <div class="field"><label>Expected output <span class="req">*</span></label><textarea id="f-expected" rows="2" placeholder="Hello, World!" style="font-family:var(--font-mono)" oninput="lp()"></textarea></div>
+          <div class="field">
+            <label>Inputs <span class="ln">(แต่ละบรรทัด = 1 input)</span></label>
+            <div class="inputs-box">
+              <div class="in-list" id="inList"></div>
+              <button class="add-in" onclick="addInput()">+ เพิ่ม input</button>
+            </div>
+          </div>
+          <div class="sep"></div>
+          <div class="sec">Test Cases <span class="ln" style="font-size:.57rem;letter-spacing:0">รองรับหลาย input/expected</span></div>
+          <div class="field">
+            <div class="tc-box">
+              <div id="tcList"></div>
+              <button class="tc-add-btn" onclick="addTestCase()">+ เพิ่ม Test Case</button>
+            </div>
+          </div>
+          <!-- Run all test cases -->
+          <div class="tc-run-row" id="tcRunRow" style="display:none">
+            <button class="tc-run-btn" id="tcRunAllBtn" onclick="runAllTestCases()" disabled>▶ รันทุก Test Case</button>
+            <span class="tc-summary" id="tcSummary"></span>
+          </div>
+          <div style="height:6px"></div>
+        </div>
+      </div>
+
+      <div class="resizer v" id="rFP"></div>
+
+      <!-- PLAYGROUND PANE -->
+      <div class="playground-pane" id="pgPane">
+
+        <!-- PG HEADER -->
+        <div class="pg-header">
+          <div class="pg-tabs">
+            <div class="pg-tab active" id="tabPreview" onclick="setTab('preview')">👁 Preview</div>
+            <div class="pg-tab" id="tabCode" onclick="setTab('code')">⌨️ โค้ดทดสอบ</div>
+          </div>
+          <div class="pg-header-right">
+            <div class="py-stat">
+              <div class="sdot loading" id="sdot2"></div>
+              <span id="stxt2">โหลด...</span>
+            </div>
+            <!-- CLOSE PREVIEW BUTTON -->
+            <button class="hdr-icon-btn" id="closePreviewBtn" onclick="togglePreview()" title="ปิด/เปิดส่วนโจทย์">
+              <span id="closePreviewIcon">▲</span> <span id="closePreviewTxt">ซ่อนโจทย์</span>
+            </button>
+            <button class="hdr-icon-btn" onclick="toggleFullscreen()" id="fsBtn">⛶ เต็มจอ</button>
+          </div>
+        </div>
+
+        <!-- TAB: PREVIEW -->
+        <div id="pgPreview" style="flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0;">
+
+          <!-- Question card (collapsible) -->
+          <div id="pqHeader">
+            <div id="pqWrap">
+              <div style="padding:50px 20px;text-align:center;color:var(--txt3);font-size:.82rem;opacity:.45;">
+                <div style="font-size:2rem;margin-bottom:8px">👁</div>
+                เลือกโจทย์เพื่อดู Preview
+              </div>
+            </div>
+          </div>
+
+          <!-- H-resizer -->
+          <div class="h-resizer" id="hRz"></div>
+
+          <!-- Editor + Output -->
+          <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0;">
+            <div class="pq-editor-bar">
+              <div class="pq-dots">
+                <div class="pq-dot pq-dot-r"></div>
+                <div class="pq-dot pq-dot-y"></div>
+                <div class="pq-dot pq-dot-g"></div>
+              </div>
+              <span class="pq-filename">main.py</span>
+              <div style="flex:1"></div>
+              <div class="pq-out-dot"></div>
+              <span class="pq-out-label">Output</span>
+            </div>
+            <div style="flex:1;display:flex;overflow:hidden;min-height:0;">
+              <div class="pq-code-col" id="pqCodeCol"><span class="cm"># เขียนโปรแกรมของคุณที่นี่</span></div>
+              <div style="width:1px;background:var(--border);flex-shrink:0"></div>
+              <div class="pq-out-col" id="pqOutCol">// ผลลัพธ์จะแสดงที่นี่ 🎯</div>
+            </div>
+            <div class="pq-footer">
+              <button class="pg-run-btn" id="pgRunBtn" onclick="runAndShow()" disabled>▶ รันโปรแกรม</button>
+              <button class="pg-check-btn" id="pgCheckBtn" onclick="checkAndShow()" disabled>✓ ตรวจคำตอบ</button>
+              <button class="pg-clear-btn" onclick="clearPg()">🗑 ล้าง</button>
+              <div class="pg-result" id="pgResult"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: CODE -->
+        <div id="pgCode" style="flex:1;display:none;flex-direction:column;overflow:hidden;min-height:0;">
+          <div class="monaco-wrap">
+            <div id="monacoTest" style="width:100%;height:100%"></div>
+          </div>
+          <div class="pq-footer" style="gap:8px;">
+            <button class="pg-run-btn" id="runBtn2" onclick="runRaw()" disabled>▶ รัน</button>
+            <button class="pg-clear-btn" onclick="clearRaw()">🗑 ล้าง</button>
+            <div class="out-inline" id="outRaw">// รันโค้ดเพื่อดูผลลัพธ์</div>
+            <span style="font-size:.65rem;color:var(--txt3);font-family:var(--font-mono);flex-shrink:0;max-width:120px;overflow:hidden;text-overflow:ellipsis" id="expLbl">expected: —</span>
+          </div>
+        </div>
+
+      </div><!-- /playground-pane -->
+    </div><!-- /editorMain -->
+  </main>
+</div>
+
+<div class="toast-w" id="toastW"></div>
+
+<!-- EXPORT MODAL -->
+<div class="mo" id="expModal" style="display:none" onclick="if(event.target===this)closeExport()">
+  <div class="modal">
+    <h2>📤 Export JSON</h2>
+    <pre id="expPre"></pre>
+    <div class="mft">
+      <button class="btn btn-sm bs" onclick="closeExport()">ปิด</button>
+      <button class="btn btn-sm bp" onclick="copyExport()">📋 Copy</button>
+      <button class="btn btn-sm bx" onclick="dlExport()">⬇️ Download</button>
+    </div>
+  </div>
+</div>
+
+<input type="file" id="importFile" accept=".json" style="display:none" onchange="handleImport(event)">
+
+<script>
+/* ===== STATE ===== */
+let questions=[], curIdx=-1, monacoEditor=null, pyodide=null, pyReady=false, sbCollapsed=false;
+let hintOpen=false, isFullscreen=false, activeTab='preview', previewHidden=false;
+
+const EXERCISES_URL='https://raw.githubusercontent.com/Karibura-Cyber/python-playground/refs/heads/main/exercises.json';
+
+/* ===== THEME ===== */
+function toggleTheme(){
+  const html=document.documentElement;
+  const isDark=html.getAttribute('data-theme')==='dark';
+  const next=isDark?'light':'dark';
+  html.setAttribute('data-theme',next);
+  document.getElementById('themeLabel').textContent=isDark?'Light':'Dark';
+  // update Monaco theme
+  if(monacoEditor) monaco.editor.setTheme(isDark?'qd-light':'qd-dark');
+  localStorage.setItem('qb-theme',next);
+}
+(function(){
+  const saved=localStorage.getItem('qb-theme')||'dark';
+  document.documentElement.setAttribute('data-theme',saved);
+  // label will be set after DOM ready
+  document.addEventListener('DOMContentLoaded',()=>{
+    document.getElementById('themeLabel').textContent=saved==='dark'?'Dark':'Light';
+  });
+})();
+
+/* ===== MONACO ===== */
+require.config({paths:{vs:'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs'}});
+require(['vs/editor/editor.main'],()=>{
+  // Dark theme
+  monaco.editor.defineTheme('qd-dark',{
+    base:'vs-dark',inherit:true,
+    rules:[
+      {token:'comment',foreground:'4a6080',fontStyle:'italic'},
+      {token:'keyword',foreground:'7c6fff'},
+      {token:'string',foreground:'00c896'},
+      {token:'number',foreground:'f5a623'},
+    ],
+    colors:{
+      'editor.background':'#0d0f14','editor.foreground':'#e8eaf0',
+      'editorLineNumber.foreground':'#2a3045','editorCursor.foreground':'#00c896',
+      'editor.selectionBackground':'#2a3a50','editor.lineHighlightBackground':'#161922',
+    }
+  });
+  // Light theme
+  monaco.editor.defineTheme('qd-light',{
+    base:'vs',inherit:true,
+    rules:[
+      {token:'comment',foreground:'8a9abf',fontStyle:'italic'},
+      {token:'keyword',foreground:'5b4fcf'},
+      {token:'string',foreground:'00876a'},
+      {token:'number',foreground:'c07a00'},
+    ],
+    colors:{
+      'editor.background':'#1e2230','editor.foreground':'#e8eaf0',
+      'editorLineNumber.foreground':'#3a4566','editorCursor.foreground':'#00c896',
+      'editor.selectionBackground':'#2a3a50','editor.lineHighlightBackground':'#252c40',
+    }
+  });
+
+  const curTheme=document.documentElement.getAttribute('data-theme');
+  monacoEditor=monaco.editor.create(document.getElementById('monacoTest'),{
+    language:'python', theme:curTheme==='light'?'qd-light':'qd-dark',
+    fontSize:12.5, fontFamily:"'JetBrains Mono',monospace",
+    lineHeight:21, minimap:{enabled:false}, scrollBeyondLastLine:false,
+    padding:{top:10,bottom:10}, wordWrap:'on', automaticLayout:true,
+    tabSize:4, insertSpaces:true,
+    scrollbar:{verticalScrollbarSize:4,horizontalScrollbarSize:4},
+    value:'# ทดสอบโค้ดที่นี่\n',
+  });
+  initApp();
+});
+
+/* ===== INIT ===== */
+async function initApp(){
+  setSp('กำลังโหลดโจทย์จาก GitHub...');
+  await fetchExercises();
+  hideSp();
+  initResizers();
+  initHResizer();
+  startPyodide();
+}
+
+async function fetchExercises(){
+  try{
+    const r=await fetch(EXERCISES_URL);
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    const d=await r.json();
+    if(!Array.isArray(d))throw new Error('ไม่ใช่ array');
+    questions=d; renderSb();
+    if(questions.length)selectQ(0);
+    toast(`✅ โหลด ${d.length} ข้อสำเร็จ`,'ok');
+  }catch(e){
+    questions=[];renderSb();
+    toast('⚠️ โหลดไม่สำเร็จ: '+e.message,'err');
+  }
+}
+function setSp(t){const el=document.getElementById('spTxt');if(el)el.textContent=t;}
+function hideSp(){
+  const el=document.getElementById('splash');
+  el.style.transition='opacity .3s'; el.style.opacity='0';
+  setTimeout(()=>el.style.display='none',320);
+}
+
+/* ===== PYODIDE ===== */
+function startPyodide(){
+  const s=document.createElement('script');
+  s.src='https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js';
+  s.onload=async()=>{
+    try{
+      pyodide=await loadPyodide({indexURL:'https://cdn.jsdelivr.net/pyodide/v0.25.0/full/'});
+      pyReady=true; setDot('ready','Pyodide พร้อม');
+      if(curIdx>=0){
+        ['pgRunBtn','pgCheckBtn','runBtn2'].forEach(id=>document.getElementById(id).disabled=false);
+        // enable run all test cases button
+        const tcBtn=document.getElementById('tcRunAllBtn');
+        if(tcBtn)tcBtn.disabled=false;
+        // re-render test cases so individual run buttons get enabled
+        const q=questions[curIdx];
+        if(q?.testCases?.length)renderTestCases(q.testCases);
+      }
+      toast('✅ Pyodide พร้อม','ok');
+    }catch{setDot('error','ผิดพลาด');}
+  };
+  s.onerror=()=>setDot('error','โหลดไม่ได้');
+  document.head.appendChild(s);
+}
+function setDot(c,t){
+  ['sdot','sdot2'].forEach(id=>document.getElementById(id).className='sdot '+c);
+  ['stxt','stxt2'].forEach(id=>document.getElementById(id).textContent=t);
+}
+
+/* ===== RESIZERS ===== */
+function initResizers(){
+  mkDrag(document.getElementById('rSb'),dx=>{
+    const sb=document.getElementById('sidebar');
+    if(sbCollapsed)return;
+    sb.style.width=Math.max(180,Math.min(480,sb.getBoundingClientRect().width+dx))+'px';
+    if(monacoEditor)monacoEditor.layout();
+  });
+  mkDrag(document.getElementById('rFP'),dx=>{
+    const fp=document.getElementById('formPane');
+    fp.style.width=Math.max(180,Math.min(520,fp.getBoundingClientRect().width+dx))+'px';
+    if(monacoEditor)monacoEditor.layout();
+  });
+}
+function initHResizer(){
+  const hz=document.getElementById('hRz');
+  hz.addEventListener('mousedown',e=>{
+    e.preventDefault();
+    let last=e.clientY;
+    hz.classList.add('dragging');
+    document.body.style.cursor='row-resize'; document.body.style.userSelect='none';
+    const mv=e2=>{
+      const dy=e2.clientY-last; last=e2.clientY;
+      const header=document.getElementById('pqHeader');
+      const cur=header.getBoundingClientRect().height;
+      header.style.maxHeight=Math.max(60,Math.min(500,cur+dy))+'px';
+      if(monacoEditor)monacoEditor.layout();
+    };
+    const up=()=>{
+      hz.classList.remove('dragging');
+      document.body.style.cursor=''; document.body.style.userSelect='';
+      document.removeEventListener('mousemove',mv); document.removeEventListener('mouseup',up);
+    };
+    document.addEventListener('mousemove',mv); document.addEventListener('mouseup',up);
+  });
+}
+function mkDrag(el,onDx){
+  el.addEventListener('mousedown',e=>{
+    e.preventDefault(); let last=e.clientX;
+    el.classList.add('dragging');
+    document.body.style.cursor='col-resize'; document.body.style.userSelect='none';
+    const mv=e2=>{onDx(e2.clientX-last); last=e2.clientX;};
+    const up=()=>{
+      el.classList.remove('dragging');
+      document.body.style.cursor=''; document.body.style.userSelect='';
+      document.removeEventListener('mousemove',mv); document.removeEventListener('mouseup',up);
+    };
+    document.addEventListener('mousemove',mv); document.addEventListener('mouseup',up);
+  });
+}
+
+/* ===== TOGGLE PREVIEW (close/open question card) ===== */
+function togglePreview(){
+  previewHidden=!previewHidden;
+  const header=document.getElementById('pqHeader');
+  const hz=document.getElementById('hRz');
+  const icon=document.getElementById('closePreviewIcon');
+  const txt=document.getElementById('closePreviewTxt');
+  const btn=document.getElementById('closePreviewBtn');
+
+  if(previewHidden){
+    header.classList.add('hidden');
+    hz.classList.add('hidden');
+    icon.textContent='▼';
+    txt.textContent='แสดงโจทย์';
+    btn.classList.add('active-danger');
+  } else {
+    header.classList.remove('hidden');
+    hz.classList.remove('hidden');
+    icon.textContent='▲';
+    txt.textContent='ซ่อนโจทย์';
+    btn.classList.remove('active-danger');
+  }
+  setTimeout(()=>{if(monacoEditor)monacoEditor.layout();},240);
+}
+
+/* ===== FULLSCREEN ===== */
+function toggleFullscreen(){
+  isFullscreen=!isFullscreen;
+  const pg=document.getElementById('pgPane');
+  const btn=document.getElementById('fsBtn');
+  if(isFullscreen){
+    pg.classList.add('fullscreen');
+    btn.textContent='✕ ออกจากเต็มจอ';
+    btn.style.color='var(--acc3)'; btn.style.borderColor='rgba(255,107,107,.4)';
+  } else {
+    pg.classList.remove('fullscreen');
+    btn.textContent='⛶ เต็มจอ';
+    btn.style.color=''; btn.style.borderColor='';
+  }
+  setTimeout(()=>{if(monacoEditor)monacoEditor.layout();},50);
+}
+
+/* ===== TABS ===== */
+function setTab(tab){
+  activeTab=tab;
+  document.getElementById('tabPreview').classList.toggle('active',tab==='preview');
+  document.getElementById('tabCode').classList.toggle('active',tab==='code');
+  document.getElementById('pgPreview').style.display=tab==='preview'?'flex':'none';
+  document.getElementById('pgCode').style.display=tab==='code'?'flex':'none';
+  const cpBtn=document.getElementById('closePreviewBtn');
+  cpBtn.style.display=tab==='preview'?'':'none';
+  if(tab==='code'&&monacoEditor)monacoEditor.layout();
+}
+
+/* ===== SIDEBAR ===== */
+function toggleSb(){
+  sbCollapsed=!sbCollapsed;
+  document.getElementById('sidebar').classList.toggle('collapsed',sbCollapsed);
+  setTimeout(()=>{if(monacoEditor)monacoEditor.layout();},230);
+}
+
+/* ===== RENDER SIDEBAR ===== */
+function renderSb(){
+  const l=document.getElementById('qList');
+  document.getElementById('qCount').textContent=questions.length;
+  if(!questions.length){
+    l.innerHTML=`<div style="padding:28px 8px;text-align:center;color:var(--txt3);font-size:.73rem;"><div style="font-size:1.7rem;margin-bottom:7px;opacity:.28">📝</div>ยังไม่มีโจทย์</div>`;return;
+  }
+  let html='', lastCh=null;
+  questions.forEach((q,i)=>{
+    if(q.chapter&&q.chapter!==lastCh){html+=`<div class="q-ch">${esc(q.chapter)}</div>`;lastCh=q.chapter;}
+    else if(!q.chapter) lastCh=null;
+    html+=`<div class="q-item${i===curIdx?' active':''}" onclick="selectQ(${i})">
+      <div class="q-row">
+        <span class="q-num">#${q.id}</span>
+        <span class="q-name">${esc(q.title||'ไม่มีชื่อ')}</span>
+        <span class="q-badge ${q.badgeClass||'badge-custom'}">${esc(q.badge||q.type||'')}</span>
+      </div>
+      <button class="q-del" onclick="event.stopPropagation();delAt(${i})">✕</button>
+    </div>`;
+  });
+  l.innerHTML=html;
+  setTimeout(()=>{const a=l.querySelector('.q-item.active');if(a)a.scrollIntoView({block:'nearest'});},40);
+}
+
+/* ===== SELECT ===== */
+function selectQ(i){
+  curIdx=i; const q=questions[i];
+  renderSb();
+  document.getElementById('emptyMain').style.display='none';
+  document.getElementById('editorMain').style.display='flex';
+
+  document.getElementById('f-id').value=q.id??'';
+  document.getElementById('f-chapter').value=q.chapter||'';
+  document.getElementById('f-title').value=q.title||'';
+  document.getElementById('f-badge').value=q.badge||'';
+  document.getElementById('f-badgeClass').value=q.badgeClass||'badge-custom';
+  document.getElementById('f-type').value=q.type||'print';
+  document.getElementById('f-desc').value=q.desc||'';
+  document.getElementById('f-hint').value=q.hint||'';
+  document.getElementById('f-starter').value=q.starterCode||'# เขียนโปรแกรมของคุณที่นี่\n';
+  document.getElementById('f-expected').value=q.expected||'';
+  renderInputs(q.inputs||[]);
+  renderTestCases(q.testCases||[]);
+
+  if(monacoEditor)monacoEditor.setValue(q.starterCode||'# เขียนโปรแกรมของคุณที่นี่\n');
+  document.getElementById('expLbl').textContent='expected: '+(q.expected?q.expected.replace(/\n/g,'↵'):'—');
+  document.getElementById('pqOutCol').textContent='// ผลลัพธ์จะแสดงที่นี่ 🎯';
+  document.getElementById('pqOutCol').style.color='var(--out-dim)';
+  document.getElementById('pgResult').textContent=''; document.getElementById('pgResult').className='pg-result';
+  document.getElementById('outRaw').textContent='// รันโค้ดเพื่อดูผลลัพธ์'; document.getElementById('outRaw').className='out-inline';
+  ['pgRunBtn','pgCheckBtn','runBtn2'].forEach(id=>document.getElementById(id).disabled=!pyReady);
+
+  hintOpen=false; renderPreview();
+}
+
+function syncBadge(){
+  const t=document.getElementById('f-type').value;
+  document.getElementById('f-badge').value=t;
+  document.getElementById('f-badgeClass').value='badge-'+t;
+}
+function lp(){renderPreview();}
+
+/* ===== RENDER PREVIEW ===== */
+function renderPreview(){
+  if(curIdx<0)return;
+  const title=document.getElementById('f-title').value||'(ไม่มีชื่อ)';
+  const chapter=document.getElementById('f-chapter').value.trim();
+  const badge=document.getElementById('f-badge').value||'';
+  const badgeCls=document.getElementById('f-badgeClass').value||'badge-custom';
+  const desc=document.getElementById('f-desc').value||'';
+  const hint=document.getElementById('f-hint').value||'';
+  const starter=document.getElementById('f-starter').value||'';
+  const inputs=getInputs();
+
+  const chTag=chapter?`<span class="pq-chapter">${esc(chapter)}</span>`:'';
+  const bdgTag=badge?`<span class="pq-badge ${esc(badgeCls)}">${esc(badge)}</span>`:'';
+  const inputHtml=inputs.length?`<div class="pq-inputs"><span class="pq-inputs-lbl">⚡ inputs:</span>${inputs.map(v=>`<span class="pq-chip">${esc(v)}</span>`).join('')}</div>`:'';
+  const hintHtml=hint?`<div class="pq-hint-wrap">
+    <button class="pq-hint-btn" onclick="toggleHint()">💡 ${hintOpen?'ซ่อน hint':'แสดง hint'}</button>
+    ${hintOpen?`<div class="pq-hint-body">${esc(hint)}</div>`:''}
+  </div>`:'';
+
+  document.getElementById('pqWrap').innerHTML=`
+    <div class="pq-header">
+      <div class="pq-meta">${bdgTag}${chTag}</div>
+      <div class="pq-title">${esc(title)}</div>
+      <div class="pq-desc">${desc}</div>
+      ${inputHtml}${hintHtml}
+    </div>`;
+
+  document.getElementById('pqCodeCol').innerHTML=syntaxHL(starter);
+}
+
+function toggleHint(){hintOpen=!hintOpen;renderPreview();}
+
+/* ===== SYNTAX HIGHLIGHT ===== */
+function syntaxHL(code){
+  if(!code||!code.trim()) return '<span class="cm"># เขียนโปรแกรมของคุณที่นี่</span>';
+
+  const KWS = ['def','class','import','from','return','elif','else','for','while','and','or','not',
+    'True','False','None','print','input','int','float','str','len','range','pass','break',
+    'continue','try','except','finally','with','as','lambda','if','in'];
+
+  return code.split('\n').map(rawLine => {
+    // 1. escape HTML for the whole line
+    let line = rawLine
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+    // 2. split off trailing comment (# outside quotes)
+    let codePart = line, commentPart = '';
+    let inStr = null, i = 0;
+    for (; i < line.length; i++) {
+      const ch = line[i];
+      if (!inStr && (ch === '"' || ch === "'")) { inStr = ch; }
+      else if (inStr && ch === inStr && line[i-1] !== '\\') { inStr = null; }
+      else if (!inStr && ch === '#') {
+        commentPart = '<span class="cm">' + line.slice(i) + '</span>';
+        codePart = line.slice(0, i);
+        break;
+      }
+    }
+
+    // 3. highlight strings in codePart
+    codePart = codePart.replace(/(&#34;[^&#34;]*&#34;|&#39;[^&#39;]*&#39;|&quot;[^&quot;]*&quot;|"[^"]*"|'[^']*')/g,
+      '<span class="str">$1</span>');
+
+    // 4. highlight keywords (only outside string spans)
+    // split on existing spans, only touch text nodes
+    codePart = codePart.split(/(<[^>]+>[^<]*<\/[^>]+>)/g).map((seg, idx) => {
+      if (idx % 2 === 1) return seg; // inside a span, skip
+      KWS.forEach(k => {
+        seg = seg.replace(new RegExp(`(?<![\\w])(${k})(?![\\w])`, 'g'), '<span class="kw">$1</span>');
+      });
+      return seg;
+    }).join('');
+
+    // 5. highlight numbers in text-only segments
+    codePart = codePart.split(/(<[^>]+>[^<]*<\/[^>]+>)/g).map((seg, idx) => {
+      if (idx % 2 === 1) return seg;
+      return seg.replace(/\b(\d+\.?\d*)\b/g, '<span class="num">$1</span>');
+    }).join('');
+
+    return codePart + commentPart;
+  }).join('\n');
+}
+
+/* ===== PYODIDE RUN ===== */
+async function pyRun(code,inputs){
+  const wrapped=`
+import sys,builtins
+from io import StringIO
+_inp=${JSON.stringify(inputs)}
+_ix=[0];_buf=StringIO()
+def _in(p=''):
+    v=_inp[_ix[0]] if _ix[0]<len(_inp) else ''
+    _ix[0]+=1;return v
+builtins.input=_in;_old=sys.stdout;sys.stdout=_buf
+try:
+${code.split('\n').map(l=>'    '+l).join('\n')}
+finally:
+    sys.stdout=_old
+_buf.getvalue()`;
+  return String((await pyodide.runPythonAsync(wrapped))??'').trimEnd();
+}
+
+async function runAndShow(){
+  if(!pyReady)return;
+  const outEl=document.getElementById('pqOutCol');
+  outEl.textContent='⏳ กำลังรัน...'; outEl.style.color='var(--acc4)';
+  document.getElementById('pgResult').textContent='';
+  try{
+    const out=await pyRun(monacoEditor?monacoEditor.getValue():document.getElementById('f-starter').value||'',getInputs());
+    outEl.textContent=out||'(ไม่มี output)'; outEl.style.color='var(--acc)';
+  }catch(e){outEl.textContent='❌ '+e.message;outEl.style.color='var(--acc3)';}
+}
+
+async function checkAndShow(){
+  if(!pyReady)return;
+  const expected=document.getElementById('f-expected').value.trim();
+  const outEl=document.getElementById('pqOutCol');
+  const resEl=document.getElementById('pgResult');
+  outEl.textContent='⏳ กำลังตรวจ...'; outEl.style.color='var(--acc4)';
+  try{
+    const out=await pyRun(monacoEditor?monacoEditor.getValue():document.getElementById('f-starter').value||'',getInputs());
+    outEl.textContent=out||'(ไม่มี output)';
+    if(expected&&out===expected){
+      outEl.style.color='var(--acc)'; resEl.textContent='✅ ถูกต้อง!'; resEl.className='pg-result ok'; toast('✅ ถูกต้อง!','ok');
+    } else if(expected){
+      outEl.style.color='var(--acc3)'; resEl.textContent=`❌ ไม่ตรง — expected: ${expected.replace(/\n/g,'↵')}`; resEl.className='pg-result err'; toast('❌ ไม่ตรง','err');
+    } else {outEl.style.color='var(--acc)'; resEl.textContent='';}
+  }catch(e){outEl.textContent='❌ '+e.message; outEl.style.color='var(--acc3)';}
+}
+
+function clearPg(){
+  const sc=document.getElementById('f-starter').value||'# เขียนโปรแกรมของคุณที่นี่\n';
+  if(monacoEditor)monacoEditor.setValue(sc);
+  document.getElementById('pqOutCol').textContent='// ผลลัพธ์จะแสดงที่นี่ 🎯';
+  document.getElementById('pqOutCol').style.color='var(--out-dim)';
+  document.getElementById('pgResult').textContent=''; document.getElementById('pgResult').className='pg-result';
+}
+
+async function runRaw(){
+  if(!pyReady||!monacoEditor)return;
+  const expected=document.getElementById('f-expected').value.trim();
+  const out=document.getElementById('outRaw');
+  out.textContent='⏳ กำลังรัน...'; out.className='out-inline run';
+  try{
+    const output=await pyRun(monacoEditor.getValue(),getInputs());
+    if(expected&&output===expected){out.className='out-inline ok';out.textContent='✅ '+output;toast('✅ ถูกต้อง!','ok');}
+    else if(expected){out.className='out-inline err';out.textContent=output||'(ไม่มี output)';toast('❌ ไม่ตรง','err');}
+    else{out.className='out-inline';out.textContent=output||'(ไม่มี output)';}
+  }catch(e){out.textContent='❌ '+e.message;out.className='out-inline err';}
+}
+function clearRaw(){
+  if(monacoEditor)monacoEditor.setValue(document.getElementById('f-starter').value||'# เขียนโปรแกรมของคุณที่นี่\n');
+  document.getElementById('outRaw').textContent='// รันโค้ดเพื่อดูผลลัพธ์'; document.getElementById('outRaw').className='out-inline';
+}
+
+/* ===== INPUTS ===== */
+function renderInputs(arr){
+  const l=document.getElementById('inList');
+  if(!arr||!arr.length){l.innerHTML='';return;}
+  l.innerHTML=arr.map((v,i)=>`<div class="in-row"><input type="text" value="${esc(v)}" placeholder="input ${i+1}" oninput="upIn(${i},this.value)"><button class="ic-btn" onclick="rmIn(${i})">✕</button></div>`).join('');
+}
+function addInput(){const q=questions[curIdx];if(!q)return;if(!q.inputs)q.inputs=[];q.inputs.push('');renderInputs(q.inputs);lp();}
+function rmIn(i){questions[curIdx].inputs.splice(i,1);renderInputs(questions[curIdx].inputs);lp();}
+function upIn(i,v){questions[curIdx].inputs[i]=v;lp();}
+function getInputs(){return[...document.getElementById('inList').querySelectorAll('.in-row input')].map(r=>r.value);}
+
+/* ===== TEST CASES ===== */
+function renderTestCases(tcs){
+  const list=document.getElementById('tcList');
+  const runRow=document.getElementById('tcRunRow');
+  if(!tcs||!tcs.length){list.innerHTML='';runRow.style.display='none';document.getElementById('tcSummary').textContent='';return;}
+  runRow.style.display='flex';
+  list.innerHTML=tcs.map((tc,i)=>{
+    const inPreview=(tc.inputs||[]).length?`in:[${tc.inputs.join(', ')}]`:'no input';
+    const expPreview=tc.expected?`→ "${tc.expected.replace(/\n/g,'↵').substring(0,28)}"`:' — ';
+    const statusIcon=tc._status==='pass'?'✅':tc._status==='fail'?'❌':'';
+    return `<div class="tc-item" id="tci-${i}">
+      <button class="tc-head" onclick="toggleTc(${i})">
+        <span class="tc-num">TC ${i+1}</span>
+        <span class="tc-preview">${esc(inPreview)} ${esc(expPreview)}</span>
+        <span class="tc-status" id="tc-stat-${i}">${statusIcon}</span>
+        <span class="tc-caret">▶</span>
+      </button>
+      <div class="tc-body">
+        <div>
+          <div class="tc-body-label">Inputs</div>
+          <div class="tc-inlist" id="tc-inlist-${i}">${(tc.inputs||[]).map((v,j)=>`<div class="tc-in-row"><input type="text" value="${esc(v)}" placeholder="input ${j+1}" oninput="tcUpIn(${i},${j},this.value)"><button class="ic-btn" onclick="tcRmIn(${i},${j})">✕</button></div>`).join('')}</div>
+          <button class="add-in" style="border-top:none;border-radius:5px;margin-top:3px" onclick="tcAddIn(${i})">+ input</button>
+        </div>
+        <div>
+          <div class="tc-body-label">Expected output</div>
+          <textarea class="tc-expected-input" rows="2" placeholder="ผลลัพธ์ที่คาดหวัง" oninput="tcUpExp(${i},this.value)">${esc(tc.expected||'')}</textarea>
+        </div>
+        <div style="display:flex;gap:5px;align-items:center">
+          <button class="tc-run-btn" style="font-size:.68rem;padding:4px 9px" onclick="runSingleTc(${i})" ${!pyReady?'disabled':''}>▶ รัน</button>
+          <span id="tc-out-${i}" style="font-family:var(--font-mono);font-size:.67rem;color:var(--txt2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+          <button class="tc-del-btn" onclick="delTestCase(${i})">🗑 ลบ</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  // restore open states
+  tcs.forEach((tc,i)=>{if(tc._open)document.getElementById(`tci-${i}`)?.classList.add('open');});
+  // update run all btn
+  document.getElementById('tcRunAllBtn').disabled=!pyReady;
+}
+
+function toggleTc(i){
+  const q=questions[curIdx];if(!q||!q.testCases)return;
+  q.testCases[i]._open=!q.testCases[i]._open;
+  document.getElementById(`tci-${i}`)?.classList.toggle('open',q.testCases[i]._open);
+}
+
+function addTestCase(){
+  const q=questions[curIdx];if(!q)return;
+  if(!q.testCases)q.testCases=[];
+  // pre-fill inputs/expected from the main fields if this is the first TC
+  const isFirst=q.testCases.length===0;
+  const preInputs=isFirst?getInputs():[];
+  const preExpected=isFirst?document.getElementById('f-expected').value.trim():'';
+  q.testCases.push({inputs:[...preInputs],expected:preExpected,_open:true,_status:''});
+  renderTestCases(q.testCases);
+  document.getElementById('tcRunRow').style.display='flex';
+}
+
+function delTestCase(i){
+  const q=questions[curIdx];if(!q||!q.testCases)return;
+  q.testCases.splice(i,1);
+  renderTestCases(q.testCases);
+}
+
+function tcAddIn(tcIdx){
+  const q=questions[curIdx];if(!q||!q.testCases||!q.testCases[tcIdx])return;
+  if(!q.testCases[tcIdx].inputs)q.testCases[tcIdx].inputs=[];
+  q.testCases[tcIdx].inputs.push('');
+  renderTestCases(q.testCases);
+  // re-open
+  q.testCases[tcIdx]._open=true;
+  document.getElementById(`tci-${tcIdx}`)?.classList.add('open');
+}
+function tcRmIn(tcIdx,inIdx){
+  const q=questions[curIdx];if(!q?.testCases?.[tcIdx])return;
+  q.testCases[tcIdx].inputs.splice(inIdx,1);
+  renderTestCases(q.testCases);
+  q.testCases[tcIdx]._open=true;
+  document.getElementById(`tci-${tcIdx}`)?.classList.add('open');
+}
+function tcUpIn(tcIdx,inIdx,val){
+  const q=questions[curIdx];if(!q?.testCases?.[tcIdx])return;
+  q.testCases[tcIdx].inputs[inIdx]=val;
+}
+function tcUpExp(tcIdx,val){
+  const q=questions[curIdx];if(!q?.testCases?.[tcIdx])return;
+  q.testCases[tcIdx].expected=val;
+  // update preview
+  const prev=document.querySelector(`#tci-${tcIdx} .tc-preview`);
+  if(prev){
+    const inP=(q.testCases[tcIdx].inputs||[]).length?`in:[${q.testCases[tcIdx].inputs.join(', ')}]`:'no input';
+    const exP=val?`→ "${val.replace(/\n/g,'↵').substring(0,28)}"`:' — ';
+    prev.textContent=`${inP} ${exP}`;
+  }
+}
+
+async function runSingleTc(tcIdx){
+  if(!pyReady)return;
+  const q=questions[curIdx];if(!q?.testCases?.[tcIdx])return;
+  const tc=q.testCases[tcIdx];
+  const code=monacoEditor?monacoEditor.getValue():document.getElementById('f-starter').value||'';
+  const outEl=document.getElementById(`tc-out-${tcIdx}`);
+  const statEl=document.getElementById(`tc-stat-${tcIdx}`);
+  if(outEl)outEl.textContent='⏳...';
+  try{
+    const out=await pyRun(code,tc.inputs||[]);
+    const norm=s=>s.split('\n').map(l=>l.trimEnd()).join('\n').trim();
+    const got=norm(out);
+    const want=norm(tc.expected||'');
+    const pass=got===want;
+    tc._status=pass?'pass':'fail';
+    if(statEl)statEl.textContent=pass?'✅':'❌';
+    if(outEl){
+      outEl.textContent=out.replace(/\n/g,'↵')||'(ว่าง)';
+      outEl.style.color=pass?'var(--acc)':'var(--acc3)';
+    }
+    updateTcSummary(q.testCases);
+  }catch(e){
+    if(outEl){outEl.textContent='❌ '+e.message;outEl.style.color='var(--acc3)';}
+    tc._status='fail';if(statEl)statEl.textContent='❌';
+    updateTcSummary(q.testCases);
+  }
+}
+
+async function runAllTestCases(){
+  if(!pyReady)return;
+  const q=questions[curIdx];if(!q?.testCases?.length)return;
+  const btn=document.getElementById('tcRunAllBtn');
+  btn.disabled=true; btn.textContent='⏳ กำลังรัน...';
+  const code=monacoEditor?monacoEditor.getValue():document.getElementById('f-starter').value||'';
+  const norm=s=>s.split('\n').map(l=>l.trimEnd()).join('\n').trim();
+  for(let i=0;i<q.testCases.length;i++){
+    const tc=q.testCases[i];
+    const outEl=document.getElementById(`tc-out-${i}`);
+    const statEl=document.getElementById(`tc-stat-${i}`);
+    if(outEl)outEl.textContent='⏳...';
+    try{
+      const out=await pyRun(code,tc.inputs||[]);
+      const pass=norm(out)===norm(tc.expected||'');
+      tc._status=pass?'pass':'fail';
+      if(statEl)statEl.textContent=pass?'✅':'❌';
+      if(outEl){outEl.textContent=out.replace(/\n/g,'↵')||'(ว่าง)';outEl.style.color=pass?'var(--acc)':'var(--acc3)';}
+    }catch(e){
+      tc._status='fail';
+      if(statEl)statEl.textContent='❌';
+      if(outEl){outEl.textContent='❌ '+e.message;outEl.style.color='var(--acc3)';}
+    }
+  }
+  updateTcSummary(q.testCases);
+  btn.disabled=false; btn.textContent='▶ รันทุก Test Case';
+  const passed=q.testCases.filter(t=>t._status==='pass').length;
+  toast(passed===q.testCases.length?`✅ ผ่านทุก ${passed} test case!`:`⚠️ ผ่าน ${passed}/${q.testCases.length}`,passed===q.testCases.length?'ok':'err');
+}
+
+function updateTcSummary(tcs){
+  const el=document.getElementById('tcSummary');if(!el)return;
+  const total=tcs.length;
+  const passed=tcs.filter(t=>t._status==='pass').length;
+  const ran=tcs.filter(t=>t._status).length;
+  if(!ran){el.textContent='';return;}
+  el.textContent=`${passed}/${ran} ผ่าน`;
+  el.style.color=passed===total?'var(--acc)':passed>0?'var(--acc4)':'var(--acc3)';
+}
+
+function collectTestCases(){
+  const q=questions[curIdx];if(!q||!q.testCases)return[];
+  // return cleaned copy (strip _open, _status runtime props)
+  return q.testCases.map(tc=>({inputs:[...(tc.inputs||[])],expected:tc.expected||''}));
+}
+
+/* ===== NEW / SAVE / DELETE ===== */
+function newQ(){
+  const mx=questions.length?Math.max(...questions.map(q=>q.id||0)):0;
+  questions.push({id:mx+1,chapter:null,title:`ข้อ ${mx+1} — `,badge:'print',badgeClass:'badge-print',desc:'',hint:'',starterCode:'# เขียนโปรแกรมของคุณที่นี่\n',expected:'',inputs:[],type:'print',testCases:[]});
+  selectQ(questions.length-1);
+}
+function saveQ(){
+  if(curIdx<0)return;
+  const q=questions[curIdx];
+  q.id=parseInt(document.getElementById('f-id').value)||q.id;
+  q.chapter=document.getElementById('f-chapter').value.trim()||null;
+  q.title=document.getElementById('f-title').value.trim();
+  q.badge=document.getElementById('f-badge').value.trim();
+  q.badgeClass=document.getElementById('f-badgeClass').value;
+  q.type=document.getElementById('f-type').value;
+  q.desc=document.getElementById('f-desc').value.trim();
+  q.hint=document.getElementById('f-hint').value.trim();
+  q.starterCode=document.getElementById('f-starter').value;
+  q.expected=document.getElementById('f-expected').value.trim();
+  q.inputs=getInputs();
+  q.testCases=collectTestCases();
+  document.getElementById('expLbl').textContent='expected: '+(q.expected?q.expected.replace(/\n/g,'↵'):'—');
+  renderSb(); toast('💾 บันทึกสำเร็จ','ok');
+}
+function delQ(){if(curIdx>=0)delAt(curIdx);}
+function delAt(i){
+  if(!confirm(`ลบ "${questions[i].title}" ?`))return;
+  questions.splice(i,1);
+  if(curIdx>=questions.length)curIdx=questions.length-1;
+  if(!questions.length){curIdx=-1;document.getElementById('emptyMain').style.display='flex';document.getElementById('editorMain').style.display='none';renderSb();}
+  else selectQ(Math.max(0,curIdx));
+  toast('🗑 ลบแล้ว','err');
+}
+
+/* ===== EXPORT / IMPORT ===== */
+function showExport(){if(curIdx>=0)saveQ();document.getElementById('expPre').textContent=JSON.stringify(questions,null,2);document.getElementById('expModal').style.display='flex';}
+function closeExport(){document.getElementById('expModal').style.display='none';}
+function copyExport(){navigator.clipboard.writeText(document.getElementById('expPre').textContent).then(()=>toast('📋 คัดลอกแล้ว','ok'));}
+function dlExport(){const blob=new Blob([document.getElementById('expPre').textContent],{type:'application/json'});Object.assign(document.createElement('a'),{href:URL.createObjectURL(blob),download:'quiz_questions.json'}).click();toast('⬇️ ดาวน์โหลดแล้ว','ok');}
+function importJSON(){document.getElementById('importFile').click();}
+function handleImport(e){
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    try{
+      const d=JSON.parse(ev.target.result);
+      if(!Array.isArray(d))throw new Error('ต้องเป็น array');
+      if(questions.length&&!confirm(`แทนที่โจทย์ ${questions.length} ข้อ?`))return;
+      questions=d;curIdx=-1;
+      document.getElementById('emptyMain').style.display='flex';document.getElementById('editorMain').style.display='none';
+      renderSb();if(questions.length)selectQ(0);
+      toast(`✅ Import ${d.length} ข้อสำเร็จ`,'ok');
+    }catch(err){toast('❌ JSON ไม่ถูกต้อง: '+err.message,'err');}
+    e.target.value='';
+  };r.readAsText(f);
+}
+
+/* ===== TOAST ===== */
+function toast(msg,type='ok'){
+  const w=document.getElementById('toastW'),t=document.createElement('div');
+  t.className='toast '+type; t.textContent=msg; w.appendChild(t);
+  setTimeout(()=>{t.style.transition='opacity .25s';t.style.opacity='0';setTimeout(()=>t.remove(),260);},2600);
+}
+
+/* ===== UTIL ===== */
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+/* ===== KEYBOARD ===== */
+document.addEventListener('keydown',e=>{
+  if((e.ctrlKey||e.metaKey)&&e.key==='s')    {e.preventDefault();saveQ();}
+  if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();activeTab==='preview'?runAndShow():runRaw();}
+  if((e.ctrlKey||e.metaKey)&&e.key==='b')    {e.preventDefault();toggleSb();}
+  if(e.key==='Escape'&&isFullscreen)          {toggleFullscreen();}
+});
+</script>
+</body>
+</html>

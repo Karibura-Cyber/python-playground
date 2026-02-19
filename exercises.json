@@ -10,7 +10,10 @@
     "starterCode": "# เขียนโปรแกรมของคุณที่นี่\n",
     "expected": "Hello, World!",
     "inputs": [],
-    "type": "print"
+    "type": "print",
+    "testCases": [
+      { "inputs": [], "expected": "Hello, World!" }
+    ]
   },
   {
     "id": 2,
@@ -23,7 +26,10 @@
     "starterCode": "# เขียนโปรแกรมของคุณที่นี่\n",
     "expected": "ฉันชื่อ Python",
     "inputs": [],
-    "type": "print"
+    "type": "print",
+    "testCases": [
+      { "inputs": [], "expected": "ฉันชื่อ Python" }
+    ]
   },
   {
     "id": 3,
@@ -36,7 +42,10 @@
     "starterCode": "# print ผลไม้ 3 ชนิด\n",
     "expected": "แอปเปิ้ล\nกล้วย\nมะม่วง",
     "inputs": [],
-    "type": "print"
+    "type": "print",
+    "testCases": [
+      { "inputs": [], "expected": "แอปเปิ้ล\nกล้วย\nมะม่วง" }
+    ]
   },
   {
     "id": 4,
@@ -49,7 +58,10 @@
     "starterCode": "# print ตัวเลข 42\n",
     "expected": "42",
     "inputs": [],
-    "type": "print"
+    "type": "print",
+    "testCases": [
+      { "inputs": [], "expected": "42" }
+    ]
   },
   {
     "id": 5,
@@ -62,7 +74,10 @@
     "starterCode": "# print ข้อความ\n",
     "expected": "Python สนุกมาก!",
     "inputs": [],
-    "type": "print"
+    "type": "print",
+    "testCases": [
+      { "inputs": [], "expected": "Python สนุกมาก!" }
+    ]
   },
   {
     "id": 6,
@@ -75,7 +90,10 @@
     "starterCode": "# สร้างตัวแปร name\nname = \n# print ค่า\n",
     "expected": "น้องหมี",
     "inputs": [],
-    "type": "var"
+    "type": "var",
+    "testCases": [
+      { "inputs": [], "expected": "น้องหมี" }
+    ]
   },
   {
     "id": 7,
@@ -88,7 +106,10 @@
     "starterCode": "# สร้างตัวแปร age\nage = \n# print ค่า\n",
     "expected": "10",
     "inputs": [],
-    "type": "var"
+    "type": "var",
+    "testCases": [
+      { "inputs": [], "expected": "10" }
+    ]
   },
   {
     "id": 8,
@@ -101,7 +122,10 @@
     "starterCode": "color = \"แดง\"\n# print ข้อความ\n",
     "expected": "สีที่ฉันชอบคือ แดง",
     "inputs": [],
-    "type": "var"
+    "type": "var",
+    "testCases": [
+      { "inputs": [], "expected": "สีที่ฉันชอบคือ แดง" }
+    ]
   },
   {
     "id": 9,
@@ -114,7 +138,10 @@
     "starterCode": "x = 5\ny = 3\n# print ผลบวก\n",
     "expected": "8",
     "inputs": [],
-    "type": "var"
+    "type": "var",
+    "testCases": [
+      { "inputs": [], "expected": "8" }
+    ]
   },
   {
     "id": 10,
@@ -127,7 +154,10 @@
     "starterCode": "score = 100\n# เปลี่ยนค่าเป็น 200\n# print ค่าใหม่\n",
     "expected": "200",
     "inputs": [],
-    "type": "var"
+    "type": "var",
+    "testCases": [
+      { "inputs": [], "expected": "200" }
+    ]
   },
   {
     "id": 11,
@@ -135,12 +165,18 @@
     "title": "ข้อ 11 — บวกเลข",
     "badge": "input",
     "badgeClass": "badge-input",
-    "desc": "รับตัวเลข 2 ตัว แล้วแสดงผลบวก<br><small style=\"color:var(--accent3)\">⚡ ระบบจะส่ง input: 5 และ 3 ให้อัตโนมัติ</small>",
+    "desc": "รับตัวเลข 2 ตัว แล้วแสดงผลบวก<br><small style=\"color:var(--accent3)\">⚡ ระบบจะส่ง input อัตโนมัติ (ต้องผ่านทุก test case)</small>",
     "hint": "a = int(input())  ← int() แปลง string เป็นตัวเลข",
     "starterCode": "a = int(input())\nb = int(input())\n# คำนวณผลบวก แล้ว print\n",
     "expected": "8",
-    "inputs": ["5", "3"],
-    "type": "input"
+    "inputs": ["5","3"],
+    "type": "input",
+    "testCases": [
+      { "inputs": ["5","3"], "expected": "8" },
+      { "inputs": ["10","20"], "expected": "30" },
+      { "inputs": ["0","0"], "expected": "0" },
+      { "inputs": ["100","1"], "expected": "101" }
+    ]
   },
   {
     "id": 12,
@@ -148,12 +184,18 @@
     "title": "ข้อ 12 — ลบเลข",
     "badge": "input",
     "badgeClass": "badge-input",
-    "desc": "รับตัวเลข 2 ตัว แล้วแสดงผลลบ<br><small style=\"color:var(--accent3)\">⚡ input: 10 และ 4</small>",
+    "desc": "รับตัวเลข 2 ตัว แล้วแสดงผลลบ<br><small style=\"color:var(--accent3)\">⚡ ระบบจะส่ง input อัตโนมัติ (ต้องผ่านทุก test case)</small>",
     "hint": "print(a - b)",
     "starterCode": "a = int(input())\nb = int(input())\n# คำนวณผลลบ แล้ว print\n",
     "expected": "6",
-    "inputs": ["10", "4"],
-    "type": "input"
+    "inputs": ["10","4"],
+    "type": "input",
+    "testCases": [
+      { "inputs": ["10","4"], "expected": "6" },
+      { "inputs": ["20","5"], "expected": "15" },
+      { "inputs": ["7","7"], "expected": "0" },
+      { "inputs": ["3","10"], "expected": "-7" }
+    ]
   },
   {
     "id": 13,
@@ -161,12 +203,18 @@
     "title": "ข้อ 13 — คูณเลข",
     "badge": "input",
     "badgeClass": "badge-input",
-    "desc": "รับตัวเลข 2 ตัว แล้วแสดงผลคูณ<br><small style=\"color:var(--accent3)\">⚡ input: 6 และ 7</small>",
+    "desc": "รับตัวเลข 2 ตัว แล้วแสดงผลคูณ<br><small style=\"color:var(--accent3)\">⚡ ระบบจะส่ง input อัตโนมัติ (ต้องผ่านทุก test case)</small>",
     "hint": "ใช้เครื่องหมาย * สำหรับคูณ",
     "starterCode": "a = int(input())\nb = int(input())\n# คำนวณผลคูณ แล้ว print\n",
     "expected": "42",
-    "inputs": ["6", "7"],
-    "type": "input"
+    "inputs": ["6","7"],
+    "type": "input",
+    "testCases": [
+      { "inputs": ["6","7"], "expected": "42" },
+      { "inputs": ["3","3"], "expected": "9" },
+      { "inputs": ["0","99"], "expected": "0" },
+      { "inputs": ["12","5"], "expected": "60" }
+    ]
   },
   {
     "id": 14,
@@ -174,12 +222,18 @@
     "title": "ข้อ 14 — หารเลข (ทศนิยม)",
     "badge": "input",
     "badgeClass": "badge-input",
-    "desc": "รับตัวเลข 2 ตัว แล้วแสดงผลหาร<br><small style=\"color:var(--accent3)\">⚡ input: 10 และ 4</small>",
+    "desc": "รับตัวเลข 2 ตัว แล้วแสดงผลหาร<br><small style=\"color:var(--accent3)\">⚡ ระบบจะส่ง input อัตโนมัติ (ต้องผ่านทุก test case)</small>",
     "hint": "ใช้ / สำหรับหาร → ได้ผลเป็นทศนิยม",
     "starterCode": "a = int(input())\nb = int(input())\n# คำนวณผลหาร แล้ว print\n",
     "expected": "2.5",
-    "inputs": ["10", "4"],
-    "type": "input"
+    "inputs": ["10","4"],
+    "type": "input",
+    "testCases": [
+      { "inputs": ["10","4"], "expected": "2.5" },
+      { "inputs": ["9","3"], "expected": "3.0" },
+      { "inputs": ["7","2"], "expected": "3.5" },
+      { "inputs": ["1","4"], "expected": "0.25" }
+    ]
   },
   {
     "id": 15,
@@ -187,12 +241,18 @@
     "title": "ข้อ 15 — หารปัดเศษ",
     "badge": "input",
     "badgeClass": "badge-input",
-    "desc": "รับตัวเลข 2 ตัว แล้วแสดงผลหารแบบปัดเศษ (จำนวนเต็ม)<br><small style=\"color:var(--accent3)\">⚡ input: 10 และ 3</small>",
+    "desc": "รับตัวเลข 2 ตัว แล้วแสดงผลหารแบบปัดเศษ (จำนวนเต็ม)<br><small style=\"color:var(--accent3)\">⚡ ระบบจะส่ง input อัตโนมัติ (ต้องผ่านทุก test case)</small>",
     "hint": "ใช้ // (Floor Division) → 10 // 3 = 3",
     "starterCode": "a = int(input())\nb = int(input())\n# หารปัดเศษ แล้ว print\n",
     "expected": "3",
-    "inputs": ["10", "3"],
-    "type": "input"
+    "inputs": ["10","3"],
+    "type": "input",
+    "testCases": [
+      { "inputs": ["10","3"], "expected": "3" },
+      { "inputs": ["7","2"], "expected": "3" },
+      { "inputs": ["20","4"], "expected": "5" },
+      { "inputs": ["15","6"], "expected": "2" }
+    ]
   },
   {
     "id": 16,
@@ -200,12 +260,18 @@
     "title": "ข้อ 16 — หาเศษ (Modulo)",
     "badge": "input",
     "badgeClass": "badge-input",
-    "desc": "รับตัวเลข 2 ตัว แล้วแสดงเศษจากการหาร<br><small style=\"color:var(--accent3)\">⚡ input: 10 และ 3</small>",
+    "desc": "รับตัวเลข 2 ตัว แล้วแสดงเศษจากการหาร<br><small style=\"color:var(--accent3)\">⚡ ระบบจะส่ง input อัตโนมัติ (ต้องผ่านทุก test case)</small>",
     "hint": "ใช้ % → 10 % 3 = 1",
     "starterCode": "a = int(input())\nb = int(input())\n# หาเศษ แล้ว print\n",
     "expected": "1",
-    "inputs": ["10", "3"],
-    "type": "input"
+    "inputs": ["10","3"],
+    "type": "input",
+    "testCases": [
+      { "inputs": ["10","3"], "expected": "1" },
+      { "inputs": ["8","4"], "expected": "0" },
+      { "inputs": ["17","5"], "expected": "2" },
+      { "inputs": ["100","7"], "expected": "2" }
+    ]
   },
   {
     "id": 17,
@@ -213,12 +279,18 @@
     "title": "ข้อ 17 — ยกกำลัง",
     "badge": "input",
     "badgeClass": "badge-input",
-    "desc": "รับตัวเลข 1 ตัว แล้วยกกำลัง 2<br><small style=\"color:var(--accent3)\">⚡ input: 5</small>",
+    "desc": "รับตัวเลข 1 ตัว แล้วยกกำลัง 2<br><small style=\"color:var(--accent3)\">⚡ ระบบจะส่ง input อัตโนมัติ (ต้องผ่านทุก test case)</small>",
     "hint": "ใช้ ** → 5**2 = 25",
     "starterCode": "n = int(input())\n# ยกกำลัง 2 แล้ว print\n",
     "expected": "25",
     "inputs": ["5"],
-    "type": "input"
+    "type": "input",
+    "testCases": [
+      { "inputs": ["5"], "expected": "25" },
+      { "inputs": ["3"], "expected": "9" },
+      { "inputs": ["10"], "expected": "100" },
+      { "inputs": ["0"], "expected": "0" }
+    ]
   },
   {
     "id": 18,
@@ -226,12 +298,18 @@
     "title": "ข้อ 18 — ค่าเฉลี่ย 3 ตัว",
     "badge": "input",
     "badgeClass": "badge-input",
-    "desc": "รับตัวเลข 3 ตัว แล้วหาค่าเฉลี่ย<br><small style=\"color:var(--accent3)\">⚡ input: 10, 20, 30</small>",
+    "desc": "รับตัวเลข 3 ตัว แล้วหาค่าเฉลี่ย<br><small style=\"color:var(--accent3)\">⚡ ระบบจะส่ง input อัตโนมัติ (ต้องผ่านทุก test case)</small>",
     "hint": "avg = (a + b + c) / 3  แล้ว print(avg)",
     "starterCode": "a = int(input())\nb = int(input())\nc = int(input())\n# หาค่าเฉลี่ย แล้ว print\n",
     "expected": "20.0",
-    "inputs": ["10", "20", "30"],
-    "type": "input"
+    "inputs": ["10","20","30"],
+    "type": "input",
+    "testCases": [
+      { "inputs": ["10","20","30"], "expected": "20.0" },
+      { "inputs": ["3","6","9"], "expected": "6.0" },
+      { "inputs": ["0","0","0"], "expected": "0.0" },
+      { "inputs": ["1","2","3"], "expected": "2.0" }
+    ]
   },
   {
     "id": 19,
@@ -239,12 +317,18 @@
     "title": "ข้อ 19 — แปลงอุณหภูมิ",
     "badge": "input",
     "badgeClass": "badge-input",
-    "desc": "รับเซลเซียส แปลงเป็นฟาเรนไฮต์ (F = C × 9/5 + 32)<br><small style=\"color:var(--accent3)\">⚡ input: 100</small>",
+    "desc": "รับเซลเซียส แปลงเป็นฟาเรนไฮต์ (F = C × 9/5 + 32)<br><small style=\"color:var(--accent3)\">⚡ ระบบจะส่ง input อัตโนมัติ (ต้องผ่านทุก test case)</small>",
     "hint": "f = c * 9/5 + 32  → ควรได้ 212.0",
     "starterCode": "c = int(input())\n# F = C * 9/5 + 32\n# print ผลลัพธ์\n",
     "expected": "212.0",
     "inputs": ["100"],
-    "type": "input"
+    "type": "input",
+    "testCases": [
+      { "inputs": ["100"], "expected": "212.0" },
+      { "inputs": ["0"], "expected": "32.0" },
+      { "inputs": ["25"], "expected": "77.0" },
+      { "inputs": [-40], "expected": "-40.0" }
+    ]
   },
   {
     "id": 20,
@@ -252,11 +336,151 @@
     "title": "ข้อ 20 — พื้นที่สี่เหลี่ยม",
     "badge": "input",
     "badgeClass": "badge-input",
-    "desc": "รับความกว้างและความยาว แล้วคำนวณพื้นที่<br><small style=\"color:var(--accent3)\">⚡ input: 8 และ 5</small>",
+    "desc": "รับความกว้างและความยาว แล้วคำนวณพื้นที่<br><small style=\"color:var(--accent3)\">⚡ ระบบจะส่ง input อัตโนมัติ (ต้องผ่านทุก test case)</small>",
     "hint": "area = width * length  → ควรได้ 40",
     "starterCode": "width = int(input())\nlength = int(input())\n# คำนวณพื้นที่ แล้ว print\n",
     "expected": "40",
-    "inputs": ["8", "5"],
-    "type": "input"
+    "inputs": ["8","5"],
+    "type": "input",
+    "testCases": [
+      { "inputs": ["8","5"], "expected": "40" },
+      { "inputs": ["3","3"], "expected": "9" },
+      { "inputs": ["10","1"], "expected": "10" },
+      { "inputs": ["7","6"], "expected": "42" }
+    ]
+  },
+  {
+    "id": 21,
+    "chapter": "บทที่ 4 : Pattern & Loop",
+    "title": "ข้อ 21 — Counting star",
+    "badge": "loop",
+    "badgeClass": "badge-loop",
+    "desc": "เขียนโปรแกรมเพื่อแสดงตัวเลขตั้งแต่ 0 จนถึง 9 โดยเว้นบรรทัด\n",
+    "hint": "for count in range(10):",
+    "starterCode": "# เขียนโปรแกรมของคุณที่นี่\n",
+    "expected": "0\n1\n2\n3\n4\n5\n6\n7\n8\n9",
+    "inputs": [],
+    "type": "loop",
+    "testCases": [
+      { "inputs": [], "expected": "0\n1\n2\n3\n4\n5\n6\n7\n8\n9" }
+    ]
+  },
+  {
+    "id": 22,
+    "chapter": null,
+    "title": "ข้อ 22 — อ่านข้อมูลภายใน List",
+    "badge": "loop",
+    "badgeClass": "badge-loop",
+    "desc": "ในวิชาคอมพิวเตอร์ ครูต้องการให้นักเรียนสร้างโปรแกรมที่ใช้เพื่อแสดงรายชื่อของนักเรียนแต่ละคนที่อยู่ภายในห้อง<br>\nโดยกำหนดรายชื่อของนักเรียนทั้งหมดไว้ในตัวแปรที่ชื่อว่า <code>students</code>\n<hr><br>\nให้เขียนโปรแกรมเพื่อแสดงรายชื่อของนักเรียนทั้งหมดที่อยู่ภายใน <code>students</code>",
+    "hint": "for [var] in [sequence]:",
+    "starterCode": "# เขียนโปรแกรมของคุณที่นี่\nstudents = [\"Somchai\", \"Rattanon\", \"Michael\", \"Jeb\"]",
+    "expected": "Somchai\nRattanon\nMichael\nJeb",
+    "inputs": [],
+    "type": "loop",
+    "testCases": [
+      { "inputs": [], "expected": "Somchai\nRattanon\nMichael\nJeb" }
+    ]
+  },
+  {
+    "id": 23,
+    "chapter": null,
+    "title": "ข้อ 23 — TOO MANY INPUT!!",
+    "badge": "loop",
+    "badgeClass": "badge-loop",
+    "desc": "คุณลุงคนหนึ่งต้องการเปิดร้านขายของ แต่เครื่องคิดเลขของเขานั้นใช้งานไม่ได้ เราที่มีความรู้ในการเขียนโปรแกรมจึงเสนอตัวเพื่อช่วยคุณลุงในการสร้างโปรแกรมที่เอาไว้เพื่อบวกเลข<br><hr><br>\n\n<b>คำสั่ง</b><br>\n# บรรทัดที่ 1 : รับข้อมูลประเภท <code>int</code> จากผู้ใช้งานเพื่อระบุจำนวนของสินค้า<br>\n# บรรทัดที่ 2 - n :  รับข้อมูลประเภท <code>int</code> จากผู้ใช้งานโดยให้เป็นราคาของสินค้า\n<br>\n# เมื่อครบจำนวน ให้แสดงผลรวมของสินค้าทั้งหมดออกมาที่หน้าจอ",
+    "hint": "n = int(input())\nfor [var] in range(n):",
+    "starterCode": "# เขียนโปรแกรมของคุณที่นี่\nn = int(input())",
+    "expected": "15",
+    "inputs": ["5","1","2","3","4","5"],
+    "type": "loop",
+    "testCases": [
+      { "inputs": ["5","1","2","3","4","5"], "expected": "15" },
+      { "inputs": ["3","10","20","30"], "expected": "60" },
+      { "inputs": ["4","5","5","5","5"], "expected": "20" },
+      { "inputs": ["1","99"], "expected": "99" }
+    ]
+  },
+  {
+    "id": 24,
+    "chapter": null,
+    "title": "ข้อ 24 — นับเลขด้วย while",
+    "badge": "loop",
+    "badgeClass": "badge-loop",
+    "desc": "เขียนโปรแกรมแสดงตัวเลขตั้งแต่ 1 ถึง 10 ทีละบรรทัด โดยใช้ <code>while</code>",
+    "hint": "while [condition]:",
+    "starterCode": "# เขียนโปรแกรมของคุณที่นี่\n",
+    "expected": "1\n2\n3\n4\n5\n6\n7\n8\n9\n10",
+    "inputs": [],
+    "type": "loop",
+    "testCases": [
+      { "inputs": [], "expected": "1\n2\n3\n4\n5\n6\n7\n8\n9\n10" }
+    ]
+  },
+  {
+    "id": 25,
+    "chapter": null,
+    "title": "ข้อ 25 — นับถอยหลัง",
+    "badge": "loop",
+    "badgeClass": "badge-loop",
+    "desc": "แสดงตัวเลขจาก 10 ลงถึง 1 ด้วย <code>while</code> loop",
+    "hint": "",
+    "starterCode": "# เขียนโปรแกรมของคุณที่นี่\n",
+    "expected": "10\n9\n8\n7\n6\n5\n4\n3\n2\n1",
+    "inputs": [],
+    "type": "loop",
+    "testCases": [
+      { "inputs": [], "expected": "10\n9\n8\n7\n6\n5\n4\n3\n2\n1" }
+    ]
+  },
+  {
+    "id": 26,
+    "chapter": null,
+    "title": "ข้อ 26 — ดาว 1 แถว",
+    "badge": "loop",
+    "badgeClass": "badge-loop",
+    "desc": "แสดงเครื่องหมาย <code>*</code> จำนวน 5 ตัวในบรรทัดเดียว",
+    "hint": "",
+    "starterCode": "# เขียนโปรแกรมของคุณที่นี่\n",
+    "expected": "*****",
+    "inputs": [],
+    "type": "loop",
+    "testCases": [
+      { "inputs": [], "expected": "*****" }
+    ]
+  },
+  {
+    "id": 27,
+    "chapter": null,
+    "title": "ข้อ 27 — บันไดดาว (เพิ่มทีละดวง)",
+    "badge": "loop",
+    "badgeClass": "badge-loop",
+    "desc": "ให้สร้างโปรแกรมเพื่อแสดงสัญลักษณ์ <code>*</code> โดยเรียงเป็นขั้นบันได โดยกำหนดจำนวนของบรรทัดได้รับมาจากการนำเข้าข้อมูลจากผู้ใช้<br><br>\n<b>ตัวอย่างผลลัพธ์</b>\n<pre>\n*\n**\n***\n****\n*****\n\n</pre>",
+    "hint": "print(\"*\" * count)",
+    "starterCode": "# เขียนโปรแกรมของคุณที่นี่\nn = int(input())",
+    "expected": "*\n**\n***\n****\n*****",
+    "inputs": ["5"],
+    "type": "loop",
+    "testCases": [
+      { "inputs": ["5"], "expected": "*\n**\n***\n****\n*****" },
+      { "inputs": ["3"], "expected": "*\n**\n***" },
+      { "inputs": ["1"], "expected": "*" },
+      { "inputs": ["4"], "expected": "*\n**\n***\n****" }
+    ]
+  },
+  {
+    "id": 28,
+    "chapter": null,
+    "title": "ข้อ 28 — เรียงเฉพาะเลขคู่",
+    "badge": "loop",
+    "badgeClass": "badge-loop",
+    "desc": "เขียนโปรแกรมแสดงตัวเลขคู่ทั้งหมดตั้งแต่ 0 ถึง 18 (ไม่รวม 20)",
+    "hint": "for [var] in range(start, stop, step):",
+    "starterCode": "# เขียนโปรแกรมของคุณที่นี่\n",
+    "expected": "0\n2\n4\n6\n8\n10\n12\n14\n16\n18",
+    "inputs": [],
+    "type": "loop",
+    "testCases": [
+      { "inputs": [], "expected": "0\n2\n4\n6\n8\n10\n12\n14\n16\n18" }
+    ]
   }
 ]

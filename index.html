@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600;700;900&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js"></script>
+<script src="https://kit.fontawesome.com/866325b683.js" crossorigin="anonymous"></script>
 <style>
   /* ── DARK THEME (default) ── */
   :root {
@@ -166,7 +167,7 @@
   .app{display:grid;grid-template-columns:280px 1fr;height:calc(100vh - 55px);position:relative;z-index:1}
 
   /* ── MAIN TABS ── */
-  .main{display:grid;grid-template-rows:auto 1fr auto;overflow:hidden}
+  .main{display:flex;flex-direction:column;overflow:hidden}
   .main-tabs{display:flex;align-items:center;gap:2px;padding:6px 8px;
     background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0}
   .main-tab{
@@ -232,7 +233,19 @@
     padding:8px 20px;display:flex;align-items:center;gap:10px;
     background:var(--surface);border-top:1px solid var(--border);flex-shrink:0;
   }
-  .problem-panel{padding:16px 24px;background:var(--surface);border-bottom:1px solid var(--border)}
+  .problem-panel{padding:16px 24px;background:var(--surface);border-bottom:1px solid var(--border);
+    overflow-y:auto;flex-shrink:0;min-height:60px;max-height:60vh;
+  }
+  .problem-panel::-webkit-scrollbar{width:4px}
+  .problem-panel::-webkit-scrollbar-thumb{background:var(--accent);border-radius:2px}
+  /* Resize handle between problem panel and editor */
+  .panel-resizer{
+    height:6px;background:var(--border);cursor:ns-resize;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;
+    transition:background 0.15s;
+  }
+  .panel-resizer:hover,.panel-resizer.dragging{background:var(--accent)}
+  .panel-resizer::after{content:'';width:32px;height:2px;border-radius:1px;background:var(--text2);opacity:0.4}
   .problem-header{display:flex;align-items:flex-start;gap:12px;margin-bottom:10px}
   .problem-badge{padding:3px 10px;border-radius:20px;font-size:0.68rem;font-weight:700;
     text-transform:uppercase;letter-spacing:1px;flex-shrink:0;margin-top:2px}
@@ -273,7 +286,7 @@
     font-family:'Prompt',sans-serif;font-size:0.72rem;padding:3px 9px;border-radius:5px;
     cursor:pointer;margin-top:7px;transition:all 0.2s}
   .hint-toggle:hover{background:rgba(124,92,252,0.15)}
-  .editor-area{display:grid;grid-template-columns:1fr 1fr;overflow:hidden}
+  .editor-area{display:grid;grid-template-columns:1fr 1fr;overflow:hidden;flex:1;min-height:0}
   .editor-pane{display:flex;flex-direction:column;border-right:1px solid var(--border);overflow:hidden}
   .pane-header{padding:8px 14px;background:var(--surface2);border-bottom:1px solid var(--border);
     font-size:0.75rem;font-weight:600;color:var(--text2);display:flex;align-items:center;gap:7px;flex-shrink:0}
@@ -296,8 +309,8 @@
   .input-line-container input{flex:1;background:transparent;border:none;outline:none;
     color:var(--text);font-family:'Fira Code',monospace;font-size:0.8rem}
   .result-panel{padding:0;background:var(--surface);border-top:1px solid var(--border);
-    overflow:hidden;max-height:0;transition:max-height 0.4s ease}
-  .result-panel.show{max-height:100px}
+    overflow-y:auto;max-height:0;transition:max-height 0.4s ease}
+  .result-panel.show{max-height:200px}
   .result-inner{padding:12px 24px}
   .result-correct{display:flex;align-items:center;gap:14px;padding:12px 18px;
     background:rgba(92,252,156,0.08);border:1px solid rgba(92,252,156,0.25);border-radius:10px}
@@ -435,6 +448,8 @@
         <span>💡</span><span id="hintText"></span>
       </div>
     </div>
+
+    <div class="panel-resizer" id="panelResizer"></div>
 
     <div class="editor-area">
       <div class="editor-pane">
@@ -764,7 +779,7 @@ function buildSidebar() {
     const btn = document.createElement('button');
     btn.className = 'exercise-btn' + (i === currentIdx ? ' active' : '') + (completed.has(i) ? ' completed' : '');
     btn.id = 'ex-btn-' + i;
-    btn.innerHTML = `<div class="ex-num">${ex.id}</div><span style="flex:1">${ex.title.replace(`ข้อ ${ex.id} — `, '')}</span><span class="ex-check">✅</span>`;
+    btn.innerHTML = `<div class="ex-num">${ex.id}</div><span style="flex:1">${ex.title.replace(`ข้อ ${ex.id} — `, '')}</span>`;
     btn.onclick = () => selectExercise(i);
     (currentGroup || sb).appendChild(btn);
   });
@@ -916,7 +931,7 @@ async function runCode() {
   }
 }
 
-// ── CHECK ANSWER ───────────────────────────────────────────
+// ── CHECK ANSWER (Multi Test Cases) ───────────────────────
 async function checkAnswer() {
   if (!pyodideReady) return;
   const ex = exercises[currentIdx];
@@ -925,38 +940,65 @@ async function checkAnswer() {
   hideResult();
   setRunning(true);
 
-  let raw = '';
-  try {
-    raw = await executePython(code, ex.inputs || []);
-  } catch(e) {
-    raw = '__ERR__' + (e.message || e);
-  } finally {
-    setRunning(false);
-  }
+  // Build test cases array: support new testCases field or fall back to single case
+  const testCases = ex.testCases && ex.testCases.length > 0
+    ? ex.testCases
+    : [{ inputs: ex.inputs || [], expected: ex.expected }];
 
-  renderOutput(raw, ex.inputs || []);
-
-  if (raw.startsWith('__ERR__')) {
-    showResult(false, ex.expected, 'มี Error ในโปรแกรม');
-    updateSidebar(); updateProgress();
-    return;
-  }
-
-  // Compare: strip trailing whitespace from each line, then trim whole output
   const normalize = s => s.split('\n').map(l => l.trimEnd()).join('\n').trim();
-  const got = normalize(raw);
-  const want = normalize(ex.expected);
-  const ok = got === want;
 
-  if (ok && !completed.has(currentIdx)) {
+  let allPassed = true;
+  let firstError = null;
+  const results = [];
+
+  for (let i = 0; i < testCases.length; i++) {
+    const tc = testCases[i];
+    let raw = '';
+    try {
+      raw = await executePython(code, tc.inputs || []);
+    } catch(e) {
+      raw = '__ERR__' + (e.message || e);
+    }
+
+    if (raw.startsWith('__ERR__')) {
+      allPassed = false;
+      if (!firstError) firstError = raw;
+      results.push({ passed: false, inputs: tc.inputs, expected: tc.expected, got: null, error: true });
+      break; // stop on runtime error
+    }
+
+    const got = normalize(raw);
+    const want = normalize(tc.expected);
+    const passed = got === want;
+    if (!passed) allPassed = false;
+    results.push({ passed, inputs: tc.inputs, expected: tc.expected, got });
+  }
+
+  setRunning(false);
+
+  // Show output for last run (or first error)
+  if (firstError) {
+    renderOutput(firstError, []);
+  } else {
+    const lastTc = testCases[results.length - 1];
+    renderOutput(
+      // re-use last raw: rebuild from got
+      results[results.length-1].got !== null
+        ? results[results.length-1].got + '\n'
+        : '',
+      lastTc.inputs || []
+    );
+  }
+
+  if (allPassed && !completed.has(currentIdx)) {
     completed.add(currentIdx);
     score++;
     document.getElementById('scoreDisplay').textContent = score;
     showStarBurst();
   }
 
-  showResult(ok, ex.expected, got);
-  if (ok) document.getElementById('nextBtn').style.display =
+  showResultMulti(allPassed, results, testCases.length);
+  if (allPassed) document.getElementById('nextBtn').style.display =
     currentIdx < exercises.length - 1 ? 'flex' : 'none';
   updateSidebar(); updateProgress();
 }
@@ -1011,6 +1053,48 @@ function showResult(ok, expected, got) {
 
 function hideResult() {
   document.getElementById('resultPanel').classList.remove('show');
+}
+
+function showResultMulti(allPassed, results, total) {
+  const panel = document.getElementById('resultPanel');
+  const inner = document.getElementById('resultInner');
+  const passed = results.filter(r => r.passed).length;
+
+  if (allPassed) {
+    inner.innerHTML = `<div class="result-correct">
+      <div class="result-icon">🎉</div>
+      <div>
+        <div class="result-msg" style="color:var(--green)">ถูกต้องทุก test case! (${passed}/${total}) 🌟</div>
+        <div class="result-sub">ผ่านทุก test case เยี่ยมมาก!</div>
+      </div></div>`;
+  } else {
+    // Show per-test-case breakdown
+    const rows = results.map((r, i) => {
+      if (r.error) {
+        return `<div style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:0.78rem">
+          <span style="color:var(--red)">✗</span>
+          <span style="color:var(--text2)">Test ${i+1}</span>
+          <span style="color:var(--red)">Runtime Error</span>
+        </div>`;
+      }
+      const inputStr = (r.inputs||[]).length ? ` [input: ${r.inputs.join(', ')}]` : '';
+      return `<div style="display:flex;align-items:center;gap:8px;padding:3px 0;font-size:0.78rem;flex-wrap:wrap">
+        <span style="color:${r.passed?'var(--green)':'var(--red)'}">${r.passed?'✓':'✗'}</span>
+        <span style="color:var(--text2)">Test ${i+1}${inputStr}</span>
+        ${!r.passed ? `<span style="color:var(--text2)">คาดหวัง: <code style="color:var(--accent3)">${(r.expected||'').replace(/\n/g,' | ').substring(0,40)}</code> ได้: <code style="color:var(--red)">${(r.got||'').replace(/\n/g,' | ').substring(0,40)}</code></span>` : ''}
+      </div>`;
+    }).join('');
+    inner.innerHTML = `<div class="result-wrong" style="flex-direction:column;align-items:flex-start;gap:8px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="result-icon">🤔</div>
+        <div>
+          <div class="result-msg" style="color:var(--red)">ผ่าน ${passed}/${total} test case — ลองแก้ใหม่นะ!</div>
+        </div>
+      </div>
+      <div style="padding-left:4px;width:100%">${rows}</div>
+    </div>`;
+  }
+  panel.classList.add('show');
 }
 
 // ── HELPERS ────────────────────────────────────────────────
@@ -1201,7 +1285,8 @@ async function loadDefaultJson() {
     showToast('❌ โหลดโจทย์ไม่ได้: ' + e.message, 'err');
     return 0;
   } finally {
-    if (btn) { btn.textContent = '🔄 โหลดโจทย์'; btn.disabled = false; }
+    // if (btn) { btn.textContent = '🔄 โหลดโจทย์'; btn.disabled = false; }
+    if (btn) { btn.innerHTML = '<i class="fa-solid fa-arrows-rotate"></i> โหลดโจทย์'; btn.disabled = false; }
   }
 }
 
@@ -1341,6 +1426,39 @@ function loadProgress(event) {
   reader.onerror = () => showJsonStatus('❌ อ่านไฟล์ไม่ได้', false);
   reader.readAsText(file, 'UTF-8');
 }
+
+// ── PANEL RESIZER ──────────────────────────────────────────
+(function() {
+  const resizer = document.getElementById('panelResizer');
+  const panel   = document.querySelector('.problem-panel');
+  let dragging = false, startY = 0, startH = 0;
+
+  resizer.addEventListener('mousedown', e => {
+    dragging = true;
+    startY = e.clientY;
+    startH = panel.offsetHeight;
+    resizer.classList.add('dragging');
+    document.body.style.userSelect = 'none';
+    document.body.style.cursor = 'ns-resize';
+  });
+
+  document.addEventListener('mousemove', e => {
+    if (!dragging) return;
+    const newH = Math.max(60, Math.min(startH + (e.clientY - startY), window.innerHeight * 0.6));
+    panel.style.height = newH + 'px';
+    panel.style.maxHeight = 'none';
+    if (window.monacoEditor) window.monacoEditor.layout();
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (!dragging) return;
+    dragging = false;
+    resizer.classList.remove('dragging');
+    document.body.style.userSelect = '';
+    document.body.style.cursor = '';
+    if (window.monacoEditor) window.monacoEditor.layout();
+  });
+})();
 
 // ── INIT ───────────────────────────────────────────────────
 (async () => {
