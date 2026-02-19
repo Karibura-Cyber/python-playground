@@ -9,12 +9,28 @@
 <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600;700;900&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js"></script>
 <style>
+  /* ── DARK THEME (default) ── */
   :root {
     --bg:#0d0f1a; --surface:#141626; --surface2:#1c1f35; --surface3:#252849;
     --accent:#7c5cfc; --accent2:#fc5c9c; --accent3:#5cdbfc; --accent4:#fcdc5c;
     --green:#5cfc9c; --red:#fc5c5c; --text:#e8eaff; --text2:#9497b8;
     --border:rgba(124,92,252,0.25); --glow:0 0 30px rgba(124,92,252,0.3);
+    --editor-bg:#0d0f1a;
   }
+  /* ── LIGHT THEME ── */
+  [data-theme="light"] {
+    --bg:#f4f5fb; --surface:#ffffff; --surface2:#eef0fa; --surface3:#e2e5f5;
+    --accent:#6a3ff5; --accent2:#e03d8a; --accent3:#0891b2; --accent4:#b45309;
+    --green:#16a34a; --red:#dc2626; --text:#1a1d3a; --text2:#5b5f80;
+    --border:rgba(100,80,220,0.18); --glow:0 0 20px rgba(100,80,220,0.15);
+    --editor-bg:#f8f9ff;
+  }
+  [data-theme="light"] body::before{opacity:0.25}
+  [data-theme="light"] header{border-bottom:1px solid rgba(0,0,0,0.07)}
+  [data-theme="light"] .nav-sep{background:rgba(0,0,0,0.1)}
+  [data-theme="light"] .pane-header{background:var(--surface2)}
+  [data-theme="light"] .output-pane{background:var(--surface)}
+  [data-theme="light"] .sidebar{border-right:1px solid rgba(0,0,0,0.08)}
   *{box-sizing:border-box;margin:0;padding:0}
   body{font-family:'Prompt',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
   body::before{content:'';position:fixed;inset:0;background-image:
@@ -92,26 +108,130 @@
   .toast-close:hover{opacity:1}
   /* JSON loader bar — removed, merged into header */
   .json-loader-bar{display:none}
-  .app{display:grid;grid-template-columns:280px 1fr;height:calc(100vh - 55px);position:relative;z-index:1}
-  .sidebar{background:var(--surface);border-right:1px solid var(--border);overflow-y:auto;padding:16px 0}
+  /* ── SIDEBAR ── */
+  .sidebar{background:var(--surface);border-right:1px solid var(--border);overflow-y:auto;padding:8px 0 16px}
   .sidebar::-webkit-scrollbar{width:3px}
   .sidebar::-webkit-scrollbar-thumb{background:var(--accent);border-radius:2px}
-  .chapter-title{padding:6px 16px 10px;font-size:0.65rem;font-weight:700;text-transform:uppercase;
-    letter-spacing:2px;color:var(--text2);display:flex;align-items:center;gap:7px}
-  .chapter-title::after{content:'';flex:1;height:1px;background:var(--border)}
-  .exercise-btn{width:100%;padding:10px 16px;background:transparent;border:none;cursor:pointer;
+
+  /* Collapsible chapter header */
+  .chapter-group{width:100%}
+  .chapter-toggle{
+    width:100%;padding:8px 14px;
+    background:transparent;border:none;cursor:pointer;
+    display:flex;align-items:center;gap:8px;
+    font-family:'Prompt',sans-serif;font-size:0.68rem;font-weight:700;
+    text-transform:uppercase;letter-spacing:1.5px;color:var(--text2);
+    transition:color 0.15s;
+    position:sticky;top:0;z-index:2;
+    background:var(--surface);
+  }
+  .chapter-toggle:hover{color:var(--text)}
+  .chapter-toggle-line{flex:1;height:1px;background:var(--border)}
+  .chapter-caret{
+    font-size:0.6rem;opacity:0.5;transition:transform 0.2s ease;flex-shrink:0;
+  }
+  .chapter-group.collapsed .chapter-caret{transform:rotate(-90deg)}
+  .chapter-items{overflow:hidden;transition:max-height 0.25s ease,opacity 0.2s ease;max-height:2000px;opacity:1}
+  .chapter-group.collapsed .chapter-items{max-height:0;opacity:0}
+
+  /* Sidebar bottom — Playground button */
+  .sidebar-footer{
+    padding:10px 12px 4px;
+    border-top:1px solid var(--border);
+    margin-top:8px;
+  }
+  .playground-btn{
+    width:100%;padding:9px 14px;
+    background:rgba(92,219,252,0.08);border:1px solid rgba(92,219,252,0.2);
+    border-radius:8px;cursor:pointer;
+    display:flex;align-items:center;gap:8px;
+    font-family:'Prompt',sans-serif;font-size:0.82rem;font-weight:600;
+    color:var(--accent3);transition:all 0.15s;
+  }
+  .playground-btn:hover{background:rgba(92,219,252,0.18);border-color:rgba(92,219,252,0.4)}
+  .playground-btn.active{background:rgba(92,219,252,0.18);border-color:var(--accent3)}
+
+  .exercise-btn{width:100%;padding:9px 14px 9px 16px;background:transparent;border:none;cursor:pointer;
     text-align:left;color:var(--text2);font-family:'Prompt',sans-serif;font-size:0.82rem;
-    display:flex;align-items:center;gap:10px;transition:all 0.2s;border-left:3px solid transparent}
+    display:flex;align-items:center;gap:10px;transition:all 0.15s;border-left:3px solid transparent}
   .exercise-btn:hover{background:var(--surface2);color:var(--text);border-left-color:var(--accent)}
   .exercise-btn.active{background:linear-gradient(90deg,rgba(124,92,252,0.15) 0%,transparent 100%);
     color:var(--text);border-left-color:var(--accent)}
   .exercise-btn.completed .ex-num{background:var(--green)!important;color:#0d0f1a!important}
-  .ex-num{width:26px;height:26px;border-radius:7px;background:var(--surface3);display:flex;
-    align-items:center;justify-content:center;font-size:0.72rem;font-weight:700;flex-shrink:0;transition:all 0.2s}
+  .ex-num{width:24px;height:24px;border-radius:6px;background:var(--surface3);display:flex;
+    align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;flex-shrink:0;transition:all 0.15s}
   .exercise-btn.active .ex-num{background:var(--accent);color:white}
-  .ex-check{margin-left:auto;font-size:0.85rem;opacity:0;transition:opacity 0.2s}
+  .ex-check{margin-left:auto;font-size:0.8rem;opacity:0;transition:opacity 0.15s}
   .exercise-btn.completed .ex-check{opacity:1}
+  .app{display:grid;grid-template-columns:280px 1fr;height:calc(100vh - 55px);position:relative;z-index:1}
+
+  /* ── MAIN TABS ── */
   .main{display:grid;grid-template-rows:auto 1fr auto;overflow:hidden}
+  .main-tabs{display:flex;align-items:center;gap:2px;padding:6px 8px;
+    background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0}
+  .main-tab{
+    padding:5px 14px;border-radius:6px;border:none;cursor:pointer;
+    font-family:'Prompt',sans-serif;font-size:0.8rem;font-weight:600;
+    color:var(--text2);background:transparent;transition:all 0.15s;
+  }
+  .main-tab:hover{background:var(--surface2);color:var(--text)}
+  .main-tab.active{background:var(--surface2);color:var(--text)}
+  .main-tab.active.tab-exercises{color:var(--accent);box-shadow:inset 0 -2px 0 var(--accent)}
+  .main-tab.active.tab-playground{color:var(--accent3);box-shadow:inset 0 -2px 0 var(--accent3)}
+  /* View panels */
+  .view-panel{display:none;flex-direction:column;overflow:hidden;flex:1;min-height:0}
+  .view-panel.active{display:flex}
+
+  /* ── PLAYGROUND ── */
+  .playground-wrap{
+    display:grid;grid-template-rows:1fr auto;height:100%;overflow:hidden;
+  }
+  .pg-editor-area{
+    display:grid;grid-template-columns:1fr 1fr;overflow:hidden;
+  }
+  /* REPL terminal */
+  .repl-pane{
+    display:flex;flex-direction:column;overflow:hidden;
+    background:var(--bg);border-left:1px solid var(--border);
+  }
+  .repl-output{
+    flex:1;padding:12px 14px;
+    font-family:'Fira Code',monospace;font-size:0.8rem;line-height:1.65;
+    overflow-y:auto;color:var(--text);
+  }
+  .repl-output::-webkit-scrollbar{width:3px}
+  .repl-output::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:2px}
+  .repl-line{white-space:pre-wrap;word-break:break-all;margin-bottom:1px}
+  .repl-prompt{color:var(--accent3)}
+  .repl-out{color:var(--text)}
+  .repl-err{color:var(--red)}
+  .repl-sys{color:var(--text2);font-style:italic}
+  /* REPL input row */
+  .repl-input-row{
+    display:flex;align-items:center;gap:0;
+    border-top:1px solid var(--border);
+    background:var(--surface2);flex-shrink:0;
+  }
+  .repl-prompt-label{
+    padding:8px 10px;font-family:'Fira Code',monospace;
+    font-size:0.8rem;color:var(--accent3);flex-shrink:0;
+    border-right:1px solid var(--border);
+  }
+  .repl-input{
+    flex:1;padding:8px 12px;background:transparent;border:none;outline:none;
+    font-family:'Fira Code',monospace;font-size:0.8rem;color:var(--text);
+  }
+  .repl-run-btn{
+    padding:7px 14px;background:transparent;border:none;border-left:1px solid var(--border);
+    color:var(--accent3);font-family:'Prompt',sans-serif;font-size:0.75rem;font-weight:700;
+    cursor:pointer;transition:background 0.15s;flex-shrink:0;white-space:nowrap;
+  }
+  .repl-run-btn:hover{background:rgba(92,219,252,0.1)}
+  /* Playground action bar */
+  .pg-action-bar{
+    padding:8px 20px;display:flex;align-items:center;gap:10px;
+    background:var(--surface);border-top:1px solid var(--border);flex-shrink:0;
+  }
   .problem-panel{padding:16px 24px;background:var(--surface);border-bottom:1px solid var(--border)}
   .problem-header{display:flex;align-items:flex-start;gap:12px;margin-bottom:10px}
   .problem-badge{padding:3px 10px;border-radius:20px;font-size:0.68rem;font-weight:700;
@@ -247,7 +367,7 @@
   <div class="score-pill">
     <span>⭐</span>
     <strong id="scoreDisplay">0</strong>
-    <span style="color:rgba(255,255,255,0.2)">/</span>
+    <span style="color:var(--border)">/</span>
     <span id="totalDisplay">20</span>
   </div>
 
@@ -276,6 +396,19 @@
     โหลด Progress
   </button>
   <input type="file" id="progressFileInput" accept=".mxr" onchange="loadProgress(event)" style="display:none"/>
+
+  <div class="nav-sep"></div>
+
+  <!-- Theme toggle -->
+  <button class="nav-icon-btn" id="themeBtn" onclick="toggleTheme()" title="เปลี่ยน theme">
+    <svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+      <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+    </svg>
+    <span id="themeTxt">Light</span>
+  </button>
 </header>
 
 <!-- Toast container -->
@@ -419,6 +552,8 @@ function loadMonaco() {
   return new Promise(resolve => {
     require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs' } });
     require(['vs/editor/editor.main'], () => {
+
+      // ── Dark theme ──
       monaco.editor.defineTheme('pyAdventure', {
         base:'vs-dark', inherit:true,
         rules:[
@@ -426,26 +561,161 @@ function loadMonaco() {
           {token:'keyword',foreground:'ff79c6',fontStyle:'bold'},
           {token:'string',foreground:'f1fa8c'},
           {token:'number',foreground:'bd93f9'},
+          {token:'type',foreground:'8be9fd'},
           {token:'function',foreground:'50fa7b'},
+          {token:'variable',foreground:'f8f8f2'},
         ],
         colors:{
           'editor.background':'#0d0f1a',
           'editor.foreground':'#e8eaff',
           'editorLineNumber.foreground':'#3d4070',
           'editorLineNumber.activeForeground':'#7c5cfc',
-          'editor.selectionBackground':'#44475a',
+          'editor.selectionBackground':'#44475a80',
           'editor.lineHighlightBackground':'#1c1f3540',
           'editorCursor.foreground':'#7c5cfc',
+          'editorSuggestWidget.background':'#1c1f35',
+          'editorSuggestWidget.border':'#7c5cfc40',
+          'editorSuggestWidget.selectedBackground':'#7c5cfc30',
+          'editorHoverWidget.background':'#1c1f35',
+          'editorHoverWidget.border':'#7c5cfc40',
         }
       });
+
+      // ── Light theme ──
+      monaco.editor.defineTheme('pyAdventureLight', {
+        base:'vs', inherit:true,
+        rules:[
+          {token:'comment',foreground:'6272a4',fontStyle:'italic'},
+          {token:'keyword',foreground:'8b2fc9',fontStyle:'bold'},
+          {token:'string',foreground:'b45309'},
+          {token:'number',foreground:'6a3ff5'},
+          {token:'type',foreground:'0891b2'},
+          {token:'function',foreground:'16a34a'},
+          {token:'variable',foreground:'1a1d3a'},
+        ],
+        colors:{
+          'editor.background':'#f8f9ff',
+          'editor.foreground':'#1a1d3a',
+          'editorLineNumber.foreground':'#a0a4c8',
+          'editorLineNumber.activeForeground':'#6a3ff5',
+          'editor.selectionBackground':'#c4b5fd50',
+          'editor.lineHighlightBackground':'#eef0fa',
+          'editorCursor.foreground':'#6a3ff5',
+          'editorSuggestWidget.background':'#ffffff',
+          'editorSuggestWidget.border':'#6a3ff520',
+          'editorSuggestWidget.selectedBackground':'#eef0fa',
+          'editorHoverWidget.background':'#ffffff',
+          'editorHoverWidget.border':'#6a3ff520',
+        }
+      });
+
+      // ── Python IntelliSense ──
+      const BUILTINS = [
+        // functions
+        {label:'print',kind:1,doc:'print(*objects, sep=\" \", end=\"\\n\", file=sys.stdout)\n\nแสดงผลลัพธ์ออกทางหน้าจอ',insert:'print(${1:})'},
+        {label:'input',kind:1,doc:'input(prompt=\"\")\n\nรับค่าจาก keyboard เป็น string',insert:'input(${1:})'},
+        {label:'int',kind:1,doc:'int(x)\n\nแปลงค่าเป็นจำนวนเต็ม',insert:'int(${1:})'},
+        {label:'float',kind:1,doc:'float(x)\n\nแปลงค่าเป็นทศนิยม',insert:'float(${1:})'},
+        {label:'str',kind:1,doc:'str(object)\n\nแปลงค่าเป็นข้อความ',insert:'str(${1:})'},
+        {label:'bool',kind:1,doc:'bool(x)\n\nแปลงค่าเป็น True/False',insert:'bool(${1:})'},
+        {label:'len',kind:1,doc:'len(s)\n\nนับจำนวน elements',insert:'len(${1:})'},
+        {label:'range',kind:1,doc:'range(stop) | range(start, stop[, step])\n\nสร้าง sequence ตัวเลข',insert:'range(${1:})'},
+        {label:'abs',kind:1,doc:'abs(x)\n\nค่าสัมบูรณ์ของ x',insert:'abs(${1:})'},
+        {label:'round',kind:1,doc:'round(number, ndigits=None)\n\nปัดเศษทศนิยม',insert:'round(${1:})'},
+        {label:'max',kind:1,doc:'max(iterable) | max(a, b, ...)\n\nหาค่าสูงสุด',insert:'max(${1:})'},
+        {label:'min',kind:1,doc:'min(iterable) | min(a, b, ...)\n\nหาค่าต่ำสุด',insert:'min(${1:})'},
+        {label:'sum',kind:1,doc:'sum(iterable)\n\nรวมค่าทั้งหมด',insert:'sum(${1:})'},
+        {label:'type',kind:1,doc:'type(object)\n\nดู type ของ object',insert:'type(${1:})'},
+        {label:'list',kind:1,doc:'list(iterable)\n\nสร้าง list',insert:'list(${1:})'},
+        {label:'sorted',kind:1,doc:'sorted(iterable, reverse=False)\n\nเรียงลำดับ',insert:'sorted(${1:})'},
+        {label:'enumerate',kind:1,doc:'enumerate(iterable, start=0)\n\nวนพร้อม index',insert:'enumerate(${1:})'},
+        {label:'zip',kind:1,doc:'zip(*iterables)\n\nรวม iterables คู่กัน',insert:'zip(${1:})'},
+        {label:'map',kind:1,doc:'map(function, iterable)\n\nใช้ function กับทุก element',insert:'map(${1:}, ${2:})'},
+        {label:'filter',kind:1,doc:'filter(function, iterable)\n\nกรอง elements',insert:'filter(${1:}, ${2:})'},
+        // keywords with snippets
+        {label:'if',kind:14,doc:'if condition:\n    # code',insert:'if ${1:condition}:\n    ${2:pass}'},
+        {label:'elif',kind:14,doc:'elif condition:\n    # code',insert:'elif ${1:condition}:\n    ${2:pass}'},
+        {label:'else',kind:14,doc:'else:\n    # code',insert:'else:\n    ${1:pass}'},
+        {label:'for',kind:14,doc:'for var in iterable:\n    # code',insert:'for ${1:i} in ${2:range(10)}:\n    ${3:pass}'},
+        {label:'while',kind:14,doc:'while condition:\n    # code',insert:'while ${1:condition}:\n    ${2:pass}'},
+        {label:'def',kind:14,doc:'def function_name(params):\n    # code',insert:'def ${1:func}(${2:}):\n    ${3:pass}'},
+        {label:'return',kind:14,insert:'return ${1:}'},
+        {label:'import',kind:14,insert:'import ${1:}'},
+        {label:'from',kind:14,insert:'from ${1:} import ${2:}'},
+        {label:'class',kind:14,insert:'class ${1:MyClass}:\n    def __init__(self):\n        ${2:pass}'},
+        {label:'try',kind:14,insert:'try:\n    ${1:pass}\nexcept ${2:Exception} as e:\n    ${3:pass}'},
+        {label:'with',kind:14,insert:'with ${1:} as ${2:f}:\n    ${3:pass}'},
+        {label:'lambda',kind:14,insert:'lambda ${1:x}: ${2:x}'},
+        {label:'True',kind:17,insert:'True'},
+        {label:'False',kind:17,insert:'False'},
+        {label:'None',kind:17,insert:'None'},
+        // math module
+        {label:'math.sqrt',kind:1,doc:'math.sqrt(x)\n\nรากที่สอง — ต้อง import math ก่อน',insert:'math.sqrt(${1:})'},
+        {label:'math.pi',kind:5,doc:'π ≈ 3.14159...',insert:'math.pi'},
+        {label:'math.floor',kind:1,doc:'math.floor(x)\n\nปัดเศษลง',insert:'math.floor(${1:})'},
+        {label:'math.ceil',kind:1,doc:'math.ceil(x)\n\nปัดเศษขึ้น',insert:'math.ceil(${1:})'},
+        {label:'math.pow',kind:1,doc:'math.pow(x, y)\n\nx ยกกำลัง y',insert:'math.pow(${1:}, ${2:})'},
+        {label:'math.log',kind:1,doc:'math.log(x[, base])\n\nlogarithm',insert:'math.log(${1:})'},
+      ];
+
+      monaco.languages.registerCompletionItemProvider('python', {
+        triggerCharacters: ['.', '('],
+        provideCompletionItems(model, position) {
+          const word = model.getWordUntilPosition(position);
+          const range = {
+            startLineNumber: position.lineNumber,
+            endLineNumber:   position.lineNumber,
+            startColumn:     word.startColumn,
+            endColumn:       word.endColumn,
+          };
+          const suggestions = BUILTINS.map(b => ({
+            label:            b.label,
+            kind:             b.kind ?? monaco.languages.CompletionItemKind.Function,
+            documentation:    b.doc || b.label,
+            insertText:       b.insert || b.label,
+            insertTextRules:  monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+            range,
+          }));
+          return { suggestions };
+        }
+      });
+
+      monaco.languages.registerHoverProvider('python', {
+        provideHover(model, position) {
+          const word = model.getWordAtPosition(position);
+          if (!word) return;
+          const item = BUILTINS.find(b => b.label === word.word);
+          if (!item || !item.doc) return;
+          return {
+            contents: [
+              { value: `**${item.label}**` },
+              { value: '```\n' + item.doc + '\n```' }
+            ]
+          };
+        }
+      });
+
+      const isDark = currentTheme === 'dark';
       monacoEditor = monaco.editor.create(document.getElementById('editor-container'), {
-        value: exercises[0].starterCode,
-        language:'python', theme:'pyAdventure',
-        fontSize:14, fontFamily:"'Fira Code', monospace", fontLigatures:true,
-        minimap:{enabled:false}, scrollBeyondLastLine:false,
-        lineNumbers:'on', automaticLayout:true, tabSize:4,
-        wordWrap:'on', padding:{top:14,bottom:14},
-        quickSuggestions:true,
+        value: exercises.length > 0 ? exercises[0].starterCode : '# เขียนโค้ด Python ที่นี่\n',
+        language: 'python',
+        theme: isDark ? 'pyAdventure' : 'pyAdventureLight',
+        fontSize: 14,
+        fontFamily: "'Fira Code', monospace",
+        fontLigatures: true,
+        minimap: { enabled: false },
+        scrollBeyondLastLine: false,
+        lineNumbers: 'on',
+        automaticLayout: true,
+        tabSize: 4,
+        wordWrap: 'on',
+        padding: { top: 14, bottom: 14 },
+        quickSuggestions: { other: true, comments: false, strings: false },
+        suggestOnTriggerCharacters: true,
+        acceptSuggestionOnEnter: 'on',
+        snippetSuggestions: 'top',
+        parameterHints: { enabled: true },
+        hover: { enabled: true },
       });
       resolve();
     });
@@ -453,23 +723,50 @@ function loadMonaco() {
 }
 
 // ── SIDEBAR ────────────────────────────────────────────────
+const collapsedChapters = new Set(); // track which chapter indices are collapsed
+
 function buildSidebar() {
   const sb = document.getElementById('sidebar');
-  let lastChap = null;
+  let currentGroup = null;
+  let chapterIdx = 0;
+
   exercises.forEach((ex, i) => {
-    if (ex.chapter && ex.chapter !== lastChap) {
-      const ct = document.createElement('div');
-      ct.className = 'chapter-title';
-      ct.textContent = ex.chapter;
-      sb.appendChild(ct);
-      lastChap = ex.chapter;
+    if (ex.chapter) {
+      // New chapter group
+      chapterIdx++;
+      const idx = chapterIdx;
+      const group = document.createElement('div');
+      group.className = 'chapter-group';
+      group.id = `chap-group-${idx}`;
+      if (collapsedChapters.has(idx)) group.classList.add('collapsed');
+
+      const toggle = document.createElement('button');
+      toggle.className = 'chapter-toggle';
+      toggle.innerHTML = `
+        <span style="flex:1;text-align:left">${ex.chapter}</span>
+        <div class="chapter-toggle-line"></div>
+        <span class="chapter-caret">▾</span>`;
+      toggle.onclick = () => {
+        const collapsed = group.classList.toggle('collapsed');
+        if (collapsed) collapsedChapters.add(idx);
+        else collapsedChapters.delete(idx);
+      };
+      group.appendChild(toggle);
+
+      const items = document.createElement('div');
+      items.className = 'chapter-items';
+      group.appendChild(items);
+
+      sb.appendChild(group);
+      currentGroup = items;
     }
+
     const btn = document.createElement('button');
-    btn.className = 'exercise-btn' + (i===0?' active':'');
+    btn.className = 'exercise-btn' + (i === currentIdx ? ' active' : '') + (completed.has(i) ? ' completed' : '');
     btn.id = 'ex-btn-' + i;
-    btn.innerHTML = `<div class="ex-num">${ex.id}</div><span style="flex:1">${ex.title.replace(`ข้อ ${ex.id} — `,'')}</span><span class="ex-check">✅</span>`;
+    btn.innerHTML = `<div class="ex-num">${ex.id}</div><span style="flex:1">${ex.title.replace(`ข้อ ${ex.id} — `, '')}</span><span class="ex-check">✅</span>`;
     btn.onclick = () => selectExercise(i);
-    sb.appendChild(btn);
+    (currentGroup || sb).appendChild(btn);
   });
 }
 
@@ -755,7 +1052,35 @@ function showStarBurst() {
   }
 }
 
-// ── JSON LOADER ────────────────────────────────────────────
+// ── THEME ──────────────────────────────────────────────────
+let currentTheme = 'dark';
+
+function toggleTheme() {
+  currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+  applyTheme(currentTheme);
+  localStorage.setItem('py-adv-theme', currentTheme);
+}
+
+function applyTheme(theme) {
+  const root = document.documentElement;
+  if (theme === 'light') {
+    root.setAttribute('data-theme', 'light');
+    document.getElementById('themeIcon').innerHTML = `
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>`;
+    document.getElementById('themeTxt').textContent = 'Dark';
+    if (monacoEditor) monaco.editor.setTheme('pyAdventureLight');
+  } else {
+    root.removeAttribute('data-theme');
+    document.getElementById('themeIcon').innerHTML = `
+      <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/>
+      <line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/>
+      <line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>`;
+    document.getElementById('themeTxt').textContent = 'Light';
+    if (monacoEditor) monaco.editor.setTheme('pyAdventure');
+  }
+}
 
 const DEFAULT_JSON_URL = 'https://raw.githubusercontent.com/Karibura-Cyber/python-playground/refs/heads/main/exercises.json';
 
@@ -1019,6 +1344,11 @@ function loadProgress(event) {
 
 // ── INIT ───────────────────────────────────────────────────
 (async () => {
+  // โหลด theme จาก localStorage
+  const savedTheme = localStorage.getItem('py-adv-theme') || 'dark';
+  currentTheme = savedTheme;
+  if (savedTheme === 'light') applyTheme('light');
+
   setupInputHandling();
 
   // โหลดโจทย์จาก JSON ก่อน แล้วค่อย render UI
