@@ -1,420 +1,782 @@
 <!DOCTYPE html>
-<html lang="th">
+<html lang="th" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>🐍 Python Adventure — เรียน Python สนุกๆ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600;700;900&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js"></script>
-<script src="https://kit.fontawesome.com/866325b683.js" crossorigin="anonymous"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/monaco-editor@0.45.0/min/vs/loader.js"></script>
+
 <style>
-  /* ── DARK THEME (default) ── */
-  :root {
-    --bg:#0d0f1a; --surface:#141626; --surface2:#1c1f35; --surface3:#252849;
-    --accent:#7c5cfc; --accent2:#fc5c9c; --accent3:#5cdbfc; --accent4:#fcdc5c;
-    --green:#5cfc9c; --red:#fc5c5c; --text:#e8eaff; --text2:#9497b8;
-    --border:rgba(124,92,252,0.25); --glow:0 0 30px rgba(124,92,252,0.3);
-    --editor-bg:#0d0f1a;
-  }
-  /* ── LIGHT THEME ── */
-  [data-theme="light"] {
-    --bg:#f4f5fb; --surface:#ffffff; --surface2:#eef0fa; --surface3:#e2e5f5;
-    --accent:#6a3ff5; --accent2:#e03d8a; --accent3:#0891b2; --accent4:#b45309;
-    --green:#16a34a; --red:#dc2626; --text:#1a1d3a; --text2:#5b5f80;
-    --border:rgba(100,80,220,0.18); --glow:0 0 20px rgba(100,80,220,0.15);
-    --editor-bg:#f8f9ff;
-  }
-  [data-theme="light"] body::before{opacity:0.25}
-  [data-theme="light"] header{border-bottom:1px solid rgba(0,0,0,0.07)}
-  [data-theme="light"] .nav-sep{background:rgba(0,0,0,0.1)}
-  [data-theme="light"] .pane-header{background:var(--surface2)}
-  [data-theme="light"] .output-pane{background:var(--surface)}
-  [data-theme="light"] .sidebar{border-right:1px solid rgba(0,0,0,0.08)}
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:'Prompt',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
-  body::before{content:'';position:fixed;inset:0;background-image:
-    radial-gradient(1px 1px at 20% 30%,rgba(255,255,255,0.4) 0%,transparent 100%),
-    radial-gradient(1px 1px at 80% 10%,rgba(255,255,255,0.3) 0%,transparent 100%),
-    radial-gradient(1.5px 1.5px at 55% 70%,rgba(255,255,255,0.35) 0%,transparent 100%),
-    radial-gradient(2px 2px at 35% 15%,rgba(124,92,252,0.6) 0%,transparent 100%),
-    radial-gradient(2px 2px at 70% 85%,rgba(92,219,252,0.5) 0%,transparent 100%);
-    pointer-events:none;z-index:0}
-  header{
-    position:relative;z-index:10;
-    height:52px;padding:0 24px;
-    display:flex;align-items:center;gap:12px;
-    background:var(--surface);
-    border-bottom:1px solid rgba(255,255,255,0.06);
-  }
-  .logo{font-size:1.3rem;animation:snake 3s ease-in-out infinite;line-height:1}
-  @keyframes snake{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(8deg)}}
-  .brand{display:flex;align-items:center;gap:8px}
-  .brand-name{font-size:0.95rem;font-weight:700;color:var(--text);letter-spacing:-0.2px}
-  .brand-sep{width:1px;height:16px;background:rgba(255,255,255,0.1)}
-  /* Python status pill */
-  .py-status{display:flex;align-items:center;gap:5px;font-size:0.72rem;color:var(--text2)}
-  .status-dot{width:6px;height:6px;border-radius:50%;background:var(--accent4);animation:pulse 1.5s infinite;flex-shrink:0}
-  .status-dot.ready{background:var(--green);animation:none}
-  .status-dot.error{background:var(--red);animation:none}
-  @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
-  /* Score */
-  .score-pill{margin-left:auto;display:flex;align-items:center;gap:6px;
-    font-size:0.78rem;font-weight:600;color:var(--text2)}
-  .score-pill strong{color:var(--text);font-size:0.9rem}
-  /* Divider */
-  .nav-sep{width:1px;height:18px;background:rgba(255,255,255,0.08)}
-  /* Nav icon buttons */
-  .nav-icon-btn{
-    display:flex;align-items:center;gap:6px;
-    padding:5px 10px;border-radius:7px;border:none;
-    background:transparent;color:var(--text2);
-    font-family:'Prompt',sans-serif;font-size:0.75rem;font-weight:600;
-    cursor:pointer;transition:background 0.15s,color 0.15s;
-    white-space:nowrap;
-  }
-  .nav-icon-btn:hover{background:var(--surface2);color:var(--text)}
-  .nav-icon-btn.green:hover{color:var(--green)}
-  .nav-icon-btn.yellow:hover{color:var(--accent4)}
-  .nav-icon-btn.cyan:hover{color:var(--accent3)}
-  .nav-icon-btn.purple:hover{color:var(--accent)}
-  .nav-icon-btn:disabled{opacity:0.4;cursor:not-allowed}
-  /* Toast system */
-  #toast-container{
-    position:fixed;bottom:24px;right:24px;
-    z-index:9000;display:flex;flex-direction:column;
-    gap:8px;align-items:flex-end;pointer-events:none;
-  }
-  .toast{
-    display:flex;align-items:center;gap:10px;
-    padding:10px 16px;border-radius:10px;
-    font-size:0.8rem;font-weight:600;
-    background:var(--surface2);border:1px solid rgba(255,255,255,0.08);
-    box-shadow:0 8px 32px rgba(0,0,0,0.4);
-    pointer-events:auto;
-    transform:translateX(120%);opacity:0;
-    transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1),opacity 0.3s ease;
-    max-width:340px;
-  }
-  .toast.show{transform:translateX(0);opacity:1}
-  .toast.hide{transform:translateX(120%);opacity:0;transition:transform 0.25s ease,opacity 0.25s ease}
-  .toast-ok{color:var(--green);border-left:3px solid var(--green)}
-  .toast-err{color:var(--red);border-left:3px solid var(--red)}
-  .toast-info{color:var(--accent3);border-left:3px solid var(--accent3)}
-  .toast-icon{font-size:1rem;flex-shrink:0}
-  .toast-msg{flex:1;line-height:1.4}
-  .toast-close{background:none;border:none;color:var(--text2);cursor:pointer;
-    font-size:0.9rem;padding:0 0 0 4px;opacity:0.5;transition:opacity 0.15s}
-  .toast-close:hover{opacity:1}
-  /* JSON loader bar — removed, merged into header */
-  .json-loader-bar{display:none}
-  /* ── SIDEBAR ── */
-  .sidebar{background:var(--surface);border-right:1px solid var(--border);overflow-y:auto;padding:8px 0 16px}
-  .sidebar::-webkit-scrollbar{width:3px}
-  .sidebar::-webkit-scrollbar-thumb{background:var(--accent);border-radius:2px}
+/* ══════════════════════════════════════════
+   DESIGN TOKENS
+══════════════════════════════════════════ */
+:root {
+  /* Dark palette — neon terminal */
+  --bg:         #0a0b12;
+  --bg2:        #0f1118;
+  --surface:    #13151f;
+  --surface2:   #1a1d2e;
+  --surface3:   #22253a;
+  --surface4:   #2c3050;
 
-  /* Collapsible chapter header */
-  .chapter-group{width:100%}
-  .chapter-toggle{
-    width:100%;padding:8px 14px;
-    background:transparent;border:none;cursor:pointer;
-    display:flex;align-items:center;gap:8px;
-    font-family:'Prompt',sans-serif;font-size:0.68rem;font-weight:700;
-    text-transform:uppercase;letter-spacing:1.5px;color:var(--text2);
-    transition:color 0.15s;
-    position:sticky;top:0;z-index:2;
-    background:var(--surface);
-  }
-  .chapter-toggle:hover{color:var(--text)}
-  .chapter-toggle-line{flex:1;height:1px;background:var(--border)}
-  .chapter-caret{
-    font-size:0.6rem;opacity:0.5;transition:transform 0.2s ease;flex-shrink:0;
-  }
-  .chapter-group.collapsed .chapter-caret{transform:rotate(-90deg)}
-  .chapter-items{overflow:hidden;transition:max-height 0.25s ease,opacity 0.2s ease;max-height:2000px;opacity:1}
-  .chapter-group.collapsed .chapter-items{max-height:0;opacity:0}
+  --accent:     #6e56cf;
+  --accent-hi:  #9d7eff;
+  --neon:       #3df5c1;
+  --neon-dim:   #1fa87c;
+  --amber:      #f5b942;
+  --rose:       #f54b7a;
+  --sky:        #42c8f5;
 
-  /* Sidebar bottom — Playground button */
-  .sidebar-footer{
-    padding:10px 12px 4px;
-    border-top:1px solid var(--border);
-    margin-top:8px;
-  }
-  .playground-btn{
-    width:100%;padding:9px 14px;
-    background:rgba(92,219,252,0.08);border:1px solid rgba(92,219,252,0.2);
-    border-radius:8px;cursor:pointer;
-    display:flex;align-items:center;gap:8px;
-    font-family:'Prompt',sans-serif;font-size:0.82rem;font-weight:600;
-    color:var(--accent3);transition:all 0.15s;
-  }
-  .playground-btn:hover{background:rgba(92,219,252,0.18);border-color:rgba(92,219,252,0.4)}
-  .playground-btn.active{background:rgba(92,219,252,0.18);border-color:var(--accent3)}
+  --text:       #e5e8ff;
+  --text2:      #7a7fa8;
+  --text3:      #4a4f70;
+  --border:     rgba(110, 86, 207, 0.18);
+  --border2:    rgba(255,255,255,0.05);
 
-  .exercise-btn{width:100%;padding:9px 14px 9px 16px;background:transparent;border:none;cursor:pointer;
-    text-align:left;color:var(--text2);font-family:'Prompt',sans-serif;font-size:0.82rem;
-    display:flex;align-items:center;gap:10px;transition:all 0.15s;border-left:3px solid transparent}
-  .exercise-btn:hover{background:var(--surface2);color:var(--text);border-left-color:var(--accent)}
-  .exercise-btn.active{background:linear-gradient(90deg,rgba(124,92,252,0.15) 0%,transparent 100%);
-    color:var(--text);border-left-color:var(--accent)}
-  .exercise-btn.completed .ex-num{background:var(--green)!important;color:#0d0f1a!important}
-  .ex-num{width:24px;height:24px;border-radius:6px;background:var(--surface3);display:flex;
-    align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;flex-shrink:0;transition:all 0.15s}
-  .exercise-btn.active .ex-num{background:var(--accent);color:white}
-  .ex-check{margin-left:auto;font-size:0.8rem;opacity:0;transition:opacity 0.15s}
-  .exercise-btn.completed .ex-check{opacity:1}
-  .app{display:grid;grid-template-columns:280px 1fr;height:calc(100vh - 55px);position:relative;z-index:1}
+  --r-xs: 4px; --r-sm: 8px; --r-md: 12px; --r-lg: 16px; --r-xl: 24px;
+  --shadow-glow: 0 0 40px rgba(110, 86, 207, 0.25);
+  --shadow-card: 0 4px 24px rgba(0,0,0,0.4);
+  --sidebar-w: 268px;
+  --header-h: 54px;
+  --font-mono: 'Noto Sans Thai', sans-serif;
+}
 
-  /* ── MAIN TABS ── */
-  .main{display:flex;flex-direction:column;overflow:hidden}
-  .main-tabs{display:flex;align-items:center;gap:2px;padding:6px 8px;
-    background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0}
-  .main-tab{
-    padding:5px 14px;border-radius:6px;border:none;cursor:pointer;
-    font-family:'Prompt',sans-serif;font-size:0.8rem;font-weight:600;
-    color:var(--text2);background:transparent;transition:all 0.15s;
-  }
-  .main-tab:hover{background:var(--surface2);color:var(--text)}
-  .main-tab.active{background:var(--surface2);color:var(--text)}
-  .main-tab.active.tab-exercises{color:var(--accent);box-shadow:inset 0 -2px 0 var(--accent)}
-  .main-tab.active.tab-playground{color:var(--accent3);box-shadow:inset 0 -2px 0 var(--accent3)}
-  /* View panels */
-  .view-panel{display:none;flex-direction:column;overflow:hidden;flex:1;min-height:0}
-  .view-panel.active{display:flex}
+[data-theme="light"] {
+  --bg:         #f1f2f9;
+  --bg2:        #f8f9ff;
+  --surface:    #ffffff;
+  --surface2:   #eef0fa;
+  --surface3:   #e4e7f5;
+  --surface4:   #d8dcf0;
 
-  /* ── PLAYGROUND ── */
-  .playground-wrap{
-    display:grid;grid-template-rows:1fr auto;height:100%;overflow:hidden;
-  }
-  .pg-editor-area{
-    display:grid;grid-template-columns:1fr 1fr;overflow:hidden;
-  }
-  /* REPL terminal */
-  .repl-pane{
-    display:flex;flex-direction:column;overflow:hidden;
-    background:var(--bg);border-left:1px solid var(--border);
-  }
-  .repl-output{
-    flex:1;padding:12px 14px;
-    font-family:'Fira Code',monospace;font-size:0.8rem;line-height:1.65;
-    overflow-y:auto;color:var(--text);
-  }
-  .repl-output::-webkit-scrollbar{width:3px}
-  .repl-output::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:2px}
-  .repl-line{white-space:pre-wrap;word-break:break-all;margin-bottom:1px}
-  .repl-prompt{color:var(--accent3)}
-  .repl-out{color:var(--text)}
-  .repl-err{color:var(--red)}
-  .repl-sys{color:var(--text2);font-style:italic}
-  /* REPL input row */
-  .repl-input-row{
-    display:flex;align-items:center;gap:0;
-    border-top:1px solid var(--border);
-    background:var(--surface2);flex-shrink:0;
-  }
-  .repl-prompt-label{
-    padding:8px 10px;font-family:'Fira Code',monospace;
-    font-size:0.8rem;color:var(--accent3);flex-shrink:0;
-    border-right:1px solid var(--border);
-  }
-  .repl-input{
-    flex:1;padding:8px 12px;background:transparent;border:none;outline:none;
-    font-family:'Fira Code',monospace;font-size:0.8rem;color:var(--text);
-  }
-  .repl-run-btn{
-    padding:7px 14px;background:transparent;border:none;border-left:1px solid var(--border);
-    color:var(--accent3);font-family:'Prompt',sans-serif;font-size:0.75rem;font-weight:700;
-    cursor:pointer;transition:background 0.15s;flex-shrink:0;white-space:nowrap;
-  }
-  .repl-run-btn:hover{background:rgba(92,219,252,0.1)}
-  /* Playground action bar */
-  .pg-action-bar{
-    padding:8px 20px;display:flex;align-items:center;gap:10px;
-    background:var(--surface);border-top:1px solid var(--border);flex-shrink:0;
-  }
-  .problem-panel{padding:16px 24px;background:var(--surface);border-bottom:1px solid var(--border);
-    overflow-y:auto;flex-shrink:0;min-height:60px;max-height:60vh;
-  }
-  .problem-panel::-webkit-scrollbar{width:4px}
-  .problem-panel::-webkit-scrollbar-thumb{background:var(--accent);border-radius:2px}
-  /* Resize handle between problem panel and editor */
-  .panel-resizer{
-    height:6px;background:var(--border);cursor:ns-resize;flex-shrink:0;
-    display:flex;align-items:center;justify-content:center;
-    transition:background 0.15s;
-  }
-  .panel-resizer:hover,.panel-resizer.dragging{background:var(--accent)}
-  .panel-resizer::after{content:'';width:32px;height:2px;border-radius:1px;background:var(--text2);opacity:0.4}
-  .problem-header{display:flex;align-items:flex-start;gap:12px;margin-bottom:10px}
-  .problem-badge{padding:3px 10px;border-radius:20px;font-size:0.68rem;font-weight:700;
-    text-transform:uppercase;letter-spacing:1px;flex-shrink:0;margin-top:2px}
-  .badge-print{background:rgba(92,219,252,0.2);color:var(--accent3);border:1px solid rgba(92,219,252,0.3)}
-  .badge-var{background:rgba(252,220,92,0.2);color:var(--accent4);border:1px solid rgba(252,220,92,0.3)}
-  .badge-input{background:rgba(92,252,156,0.2);color:var(--green);border:1px solid rgba(92,252,156,0.3)}
-  .badge-condition{background:rgba(252,92,156,0.2);color:var(--accent2);border:1px solid rgba(252,92,156,0.3)}
-  .badge-loop{background:rgba(252,180,92,0.2);color:#fcb45c;border:1px solid rgba(252,180,92,0.3)}
-  /* badge styles */
-  /* Progress modal */
-  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:500;
-    display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
-  .modal-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;
-    padding:28px 32px;min-width:320px;max-width:420px;box-shadow:var(--glow)}
-  .modal-title{font-size:1.1rem;font-weight:700;margin-bottom:6px}
-  .modal-sub{font-size:0.82rem;color:var(--text2);margin-bottom:20px;line-height:1.5}
-  .modal-field{margin-bottom:14px}
-  .modal-field label{display:block;font-size:0.78rem;color:var(--text2);margin-bottom:5px}
-  .modal-field input{width:100%;background:var(--surface2);border:1px solid var(--border);
-    border-radius:8px;padding:8px 12px;color:var(--text);font-family:'Prompt',sans-serif;
-    font-size:0.88rem;outline:none}
-  .modal-field input:focus{border-color:var(--accent)}
-  .modal-actions{display:flex;gap:9px;justify-content:flex-end;margin-top:20px}
-  .modal-btn{padding:8px 18px;border-radius:8px;border:none;cursor:pointer;
-    font-family:'Prompt',sans-serif;font-size:0.84rem;font-weight:700;transition:all 0.2s}
-  .modal-btn-primary{background:linear-gradient(135deg,var(--green),#3cdc7c);color:#0d0f1a}
-  .modal-btn-primary:hover{transform:translateY(-1px)}
-  .modal-btn-cancel{background:var(--surface2);color:var(--text2);border:1px solid var(--border)}
-  .modal-btn-cancel:hover{background:var(--surface3)}
-  .problem-title{font-size:1rem;font-weight:700;color:var(--text);line-height:1.4}
-  .problem-desc{font-size:0.84rem;color:var(--text2);line-height:1.6}
-  .problem-desc code{background:var(--surface3);padding:1px 5px;border-radius:4px;
-    font-family:'Fira Code',monospace;font-size:0.8rem;color:var(--accent3)}
-  .hint-box{margin-top:10px;padding:9px 12px;background:rgba(124,92,252,0.08);
-    border:1px solid rgba(124,92,252,0.2);border-radius:9px;font-size:0.8rem;
-    color:var(--accent);display:flex;gap:7px;align-items:flex-start}
-  .hint-toggle{background:none;border:1px solid rgba(124,92,252,0.3);color:var(--accent);
-    font-family:'Prompt',sans-serif;font-size:0.72rem;padding:3px 9px;border-radius:5px;
-    cursor:pointer;margin-top:7px;transition:all 0.2s}
-  .hint-toggle:hover{background:rgba(124,92,252,0.15)}
-  .editor-area{display:grid;grid-template-columns:1fr 1fr;overflow:hidden;flex:1;min-height:0}
-  .editor-pane{display:flex;flex-direction:column;border-right:1px solid var(--border);overflow:hidden}
-  .pane-header{padding:8px 14px;background:var(--surface2);border-bottom:1px solid var(--border);
-    font-size:0.75rem;font-weight:600;color:var(--text2);display:flex;align-items:center;gap:7px;flex-shrink:0}
-  .pane-dot{width:7px;height:7px;border-radius:50%}
-  #editor-container{flex:1;overflow:hidden}
-  .output-pane{display:flex;flex-direction:column;overflow:hidden;background:var(--bg)}
-  .output-content{flex:1;padding:14px;font-family:'Fira Code',monospace;font-size:0.8rem;
-    line-height:1.7;overflow-y:auto;color:var(--text)}
-  .output-content::-webkit-scrollbar{width:3px}
-  .output-content::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:2px}
-  .out-line{margin-bottom:1px;white-space:pre-wrap;word-break:break-all}
-  .out-err{color:var(--red)}
-  .out-sys{color:var(--text2);font-style:italic}
-  .out-inp{color:var(--accent3)}
-  .input-line-container{display:none;align-items:center;gap:7px;padding:7px 14px;
-    background:rgba(124,92,252,0.1);border-top:1px solid rgba(124,92,252,0.2);
-    font-family:'Fira Code',monospace;font-size:0.8rem}
-  .input-line-container.active{display:flex}
-  .input-line-container span{color:var(--accent3);flex-shrink:0}
-  .input-line-container input{flex:1;background:transparent;border:none;outline:none;
-    color:var(--text);font-family:'Fira Code',monospace;font-size:0.8rem}
-  .result-panel{padding:0;background:var(--surface);border-top:1px solid var(--border);
-    overflow-y:auto;max-height:0;transition:max-height 0.4s ease}
-  .result-panel.show{max-height:200px}
-  .result-inner{padding:12px 24px}
-  .result-correct{display:flex;align-items:center;gap:14px;padding:12px 18px;
-    background:rgba(92,252,156,0.08);border:1px solid rgba(92,252,156,0.25);border-radius:10px}
-  .result-wrong{display:flex;align-items:center;gap:14px;padding:12px 18px;
-    background:rgba(252,92,92,0.08);border:1px solid rgba(252,92,92,0.25);border-radius:10px}
-  .result-icon{font-size:1.6rem}
-  .result-msg{font-weight:700;font-size:0.95rem}
-  .result-sub{font-size:0.78rem;color:var(--text2);margin-top:2px;font-family:'Fira Code',monospace}
-  .action-bar{padding:10px 24px;display:flex;align-items:center;gap:10px;
-    background:var(--surface);border-top:1px solid var(--border);flex-shrink:0}
-  .btn{padding:9px 20px;border-radius:9px;border:none;font-family:'Prompt',sans-serif;
-    font-size:0.85rem;font-weight:700;cursor:pointer;transition:all 0.2s;
-    display:flex;align-items:center;gap:7px}
-  .btn-run{background:linear-gradient(135deg,var(--accent),#5c3cdc);color:white;
-    box-shadow:0 4px 18px rgba(124,92,252,0.4)}
-  .btn-run:hover{transform:translateY(-1px);box-shadow:0 6px 26px rgba(124,92,252,0.6)}
-  .btn-run:disabled{opacity:0.5;cursor:not-allowed;transform:none}
-  .btn-check{background:linear-gradient(135deg,var(--accent2),#dc3c7c);color:white;
-    box-shadow:0 4px 18px rgba(252,92,156,0.4)}
-  .btn-check:hover{transform:translateY(-1px)}
-  .btn-check:disabled{opacity:0.5;cursor:not-allowed;transform:none}
-  .btn-clear{background:var(--surface2);color:var(--text2);border:1px solid var(--border)}
-  .btn-clear:hover{background:var(--surface3);color:var(--text)}
-  .btn-next{background:linear-gradient(135deg,var(--green),#3cdc7c);color:#0d0f1a;margin-left:auto}
-  .btn-next:hover{transform:translateY(-1px)}
-  .progress-bar{height:3px;background:var(--surface2);overflow:hidden}
-  .progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent3));transition:width 0.5s ease}
-  .star-burst{position:fixed;pointer-events:none;z-index:9999;font-size:2rem;animation:burst 1s ease forwards}
-  @keyframes burst{0%{transform:scale(0) translateY(0);opacity:1}100%{transform:scale(1.5) translateY(-80px);opacity:0}}
-  .loading-overlay{position:fixed;inset:0;background:rgba(13,15,26,0.97);display:flex;
-    flex-direction:column;align-items:center;justify-content:center;z-index:1000;gap:18px}
-  .loading-snake{font-size:4.5rem;animation:loadSnake 0.8s ease-in-out infinite}
-  @keyframes loadSnake{0%,100%{transform:rotate(-15deg) scale(1)}50%{transform:rotate(15deg) scale(1.1)}}
-  .loading-title{font-size:1.7rem;font-weight:900;background:linear-gradient(135deg,var(--accent),var(--accent3));
-    -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-  .loading-bar{width:280px;height:5px;background:var(--surface2);border-radius:3px;overflow:hidden}
-  .loading-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent3));border-radius:3px;transition:width 0.3s ease}
-  .loading-text{font-size:0.82rem;color:var(--text2)}
-  @media(max-width:900px){.app{grid-template-columns:1fr}.sidebar{display:none}.editor-area{grid-template-columns:1fr;grid-template-rows:1fr 1fr}}
+  --accent:     #5e40cc;
+  --accent-hi:  #7c5aef;
+  --neon:       #0d9a6e;
+  --neon-dim:   #0b7a57;
+  --amber:      #d97706;
+  --rose:       #dc2626;
+  --sky:        #0284c7;
+
+  --text:       #1c1e30;
+  --text2:      #5a5f82;
+  --text3:      #9498ba;
+  --border:     rgba(94, 64, 204, 0.14);
+  --border2:    rgba(0,0,0,0.06);
+  --shadow-card: 0 4px 24px rgba(0,0,0,0.08);
+}
+
+/* ══════════════════════════════════════════
+   RESET & BASE
+══════════════════════════════════════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px}
+body{
+  font-family:'Noto Sans Thai',sans-serif;
+  color:var(--text);
+  min-height:100vh;
+  overflow:hidden;
+  font-size:14px;
+  line-height:1.6;
+}
+
+/* Animated background grid */
+body::before{
+  content:'';
+  position:fixed;inset:0;
+  background-image:
+    linear-gradient(rgba(110,86,207,0.04) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(110,86,207,0.04) 1px,transparent 1px);
+  background-size:32px 32px;
+  pointer-events:none;z-index:0;
+}
+body::after{
+  content:'';
+  position:fixed;inset:0;
+  background:radial-gradient(ellipse 80% 50% at 50% -20%,rgba(110,86,207,0.12),transparent);
+  pointer-events:none;z-index:0;
+}
+
+/* ══════════════════════════════════════════
+   SCROLLBARS
+══════════════════════════════════════════ */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--surface4);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:var(--accent)}
+
+/* ══════════════════════════════════════════
+   LOADING SCREEN
+══════════════════════════════════════════ */
+#loadingOverlay{
+  position:fixed;inset:0;
+  background:var(--bg);
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:20px;z-index:2000;
+  transition:opacity 0.6s ease;
+}
+.load-snake{font-size:56px;animation:loadBounce 0.9s ease-in-out infinite}
+@keyframes loadBounce{0%,100%{transform:translateY(0) rotate(-10deg)}50%{transform:translateY(-12px) rotate(10deg)}}
+.load-brand{
+  font-family:'Noto Sans Thai',sans-serif;
+  font-size:2.2rem;font-weight:800;
+  background:linear-gradient(135deg,var(--accent-hi),var(--neon));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  letter-spacing:-1px;
+}
+.load-bar{
+  width:240px;height:4px;
+  background:var(--surface3);
+  border-radius:4px;overflow:hidden;
+}
+.load-fill{
+  height:100%;
+  background:linear-gradient(90deg,var(--accent),var(--neon));
+  border-radius:4px;
+  transition:width 0.35s cubic-bezier(0.4,0,0.2,1);
+}
+.load-txt{font-size:0.78rem;color:var(--text2)}
+
+/* ══════════════════════════════════════════
+   HEADER
+══════════════════════════════════════════ */
+#appHeader{
+  position:relative;z-index:100;
+  height:var(--header-h);
+  background:var(--surface);
+  border-bottom:1px solid var(--border2);
+  display:flex;align-items:center;gap:8px;
+  padding:0 16px;
+  box-shadow:0 1px 0 var(--border);
+  flex-shrink:0;
+}
+.brand{display:flex;align-items:center;gap:10px;margin-right:4px}
+.brand-icon{
+  width:32px;height:32px;
+  background:linear-gradient(135deg,var(--accent),var(--accent-hi));
+  border-radius:var(--r-sm);
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;
+  box-shadow:0 4px 12px rgba(110,86,207,0.4);
+  flex-shrink:0;
+  animation:iconPulse 4s ease-in-out infinite;
+}
+@keyframes iconPulse{0%,100%{box-shadow:0 4px 12px rgba(110,86,207,0.4)}50%{box-shadow:0 4px 20px rgba(110,86,207,0.7)}}
+.brand-name{
+  font-family:'Noto Sans Thai',sans-serif;
+  font-size:1rem;font-weight:800;
+  letter-spacing:-0.3px;
+  color:var(--text);
+}
+.vsep{width:1px;height:20px;background:var(--border2);margin:0 4px;flex-shrink:0}
+
+/* Python status */
+.py-badge{
+  display:flex;align-items:center;gap:6px;
+  padding:4px 10px;
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:20px;
+  font-size:0.72rem;font-weight:600;
+}
+.py-dot{
+  width:7px;height:7px;border-radius:50%;
+  background:var(--amber);
+  animation:dotPulse 1.2s ease-in-out infinite;
+}
+.py-dot.ready{background:var(--neon);animation:none}
+.py-dot.error{background:var(--rose);animation:none}
+@keyframes dotPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.3;transform:scale(0.7)}}
+
+/* Score chip */
+.score-chip{
+  margin-left:auto;
+  display:flex;align-items:center;gap:8px;
+  padding:5px 14px;
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:20px;
+  font-size:0.78rem;
+}
+.score-chip .score-num{
+  font-family:'Noto Sans Thai',sans-serif;
+  font-size:1rem;font-weight:800;
+  color:var(--amber);
+}
+.score-chip .score-sep{color:var(--text3)}
+.score-chip .score-total{color:var(--text2);font-size:0.8rem}
+
+/* Header action buttons */
+.hbtn{
+  display:flex;align-items:center;gap:6px;
+  padding:5px 11px;
+  border-radius:var(--r-sm);
+  border:1px solid transparent;
+  background:transparent;
+  color:var(--text2);
+  font-family:'Noto Sans Thai',sans-serif;
+  font-size:0.73rem;font-weight:600;
+  cursor:pointer;
+  transition:all 0.15s;
+  white-space:nowrap;
+}
+.hbtn:hover{background:var(--surface2);color:var(--text);border-color:var(--border)}
+.hbtn:disabled{opacity:0.4;cursor:not-allowed}
+.hbtn svg{flex-shrink:0}
+.hbtn-green:hover{color:var(--neon);border-color:rgba(61,245,193,0.2)!important}
+.hbtn-purple:hover{color:var(--accent-hi);border-color:var(--border)!important}
+.hbtn-amber:hover{color:var(--amber);border-color:rgba(245,185,66,0.2)!important}
+.hbtn-sky:hover{color:var(--sky);border-color:rgba(66,200,245,0.2)!important}
+
+/* Progress bar (thin top strip) */
+#progressBar{
+  height:2px;background:var(--surface3);
+  position:relative;z-index:99;flex-shrink:0;
+}
+#progressFill{
+  height:100%;
+  background:linear-gradient(90deg,var(--accent),var(--neon));
+  transition:width 0.5s ease;
+}
+
+/* ══════════════════════════════════════════
+   APP LAYOUT
+══════════════════════════════════════════ */
+#app{
+  display:grid;
+  grid-template-columns:var(--sidebar-w) 1fr;
+  height:calc(100vh - var(--header-h) - 2px);
+  position:relative;z-index:1;
+  overflow:hidden;
+}
+
+/* ══════════════════════════════════════════
+   SIDEBAR
+══════════════════════════════════════════ */
+#sidebar{
+  background:var(--surface);
+  border-right:1px solid var(--border2);
+  display:flex;flex-direction:column;
+  overflow:hidden;
+}
+.sidebar-inner{flex:1;overflow-y:auto;padding:8px 0 12px}
+.chapter-header{
+  display:flex;align-items:center;gap:8px;
+  padding:10px 14px 6px;
+  font-size:0.65rem;font-weight:700;
+  text-transform:uppercase;letter-spacing:1.5px;
+  color:var(--text3);
+  cursor:pointer;
+  user-select:none;
+  position:sticky;top:0;
+  background:var(--surface);
+  z-index:2;
+  transition:color 0.15s;
+}
+.chapter-header:hover{color:var(--text2)}
+.chapter-line{flex:1;height:1px;background:var(--border2)}
+.chapter-caret{
+  font-size:0.55rem;
+  transition:transform 0.2s;
+  opacity:0.5;
+}
+.chapter-group.collapsed .chapter-caret{transform:rotate(-90deg)}
+.chapter-items{overflow:hidden;max-height:9999px;transition:max-height 0.25s ease,opacity 0.2s}
+.chapter-group.collapsed .chapter-items{max-height:0;opacity:0}
+
+/* Exercise button */
+.ex-btn{
+  width:100%;padding:8px 14px 8px 12px;
+  background:transparent;border:none;border-left:3px solid transparent;
+  display:flex;align-items:center;gap:10px;
+  text-align:left;cursor:pointer;
+  transition:all 0.12s;
+  color:var(--text2);
+  font-family:'Noto Sans Thai',sans-serif;
+  font-size:0.8rem;
+}
+.ex-btn:hover{background:var(--surface2);color:var(--text);border-left-color:var(--surface4)}
+.ex-btn.active{
+  background:linear-gradient(90deg,rgba(110,86,207,0.12),transparent);
+  color:var(--text);
+  border-left-color:var(--accent);
+}
+.ex-num{
+  width:26px;height:26px;border-radius:var(--r-sm);
+  background:var(--surface3);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Noto Sans Thai',sans-serif;
+  font-size:0.68rem;font-weight:600;
+  flex-shrink:0;
+  transition:all 0.2s;
+  color:var(--text2);
+}
+.ex-btn.active .ex-num{background:var(--accent);color:#fff}
+.ex-btn.done .ex-num{background:var(--neon);color:#0a0b12}
+.ex-title{flex:1;line-height:1.4}
+.ex-check{font-size:0.75rem;opacity:0;transition:opacity 0.2s;color:var(--neon)}
+.ex-btn.done .ex-check{opacity:1}
+
+/* Sidebar footer */
+.sidebar-footer{
+  padding:10px 12px;
+  border-top:1px solid var(--border2);
+  flex-shrink:0;
+}
+.sidebar-stats{
+  display:grid;grid-template-columns:1fr 1fr;gap:6px;
+}
+.stat-card{
+  padding:8px 10px;
+  background:var(--surface2);
+  border-radius:var(--r-sm);
+  border:1px solid var(--border);
+  text-align:center;
+}
+.stat-card .stat-val{
+  font-family:'Noto Sans Thai',sans-serif;
+  font-size:1.2rem;font-weight:800;
+  color:var(--accent-hi);
+  display:block;
+}
+.stat-card .stat-lbl{font-size:0.66rem;color:var(--text3);margin-top:1px}
+
+/* ══════════════════════════════════════════
+   MAIN AREA
+══════════════════════════════════════════ */
+#main{
+  display:flex;flex-direction:column;
+  overflow:hidden;
+}
+
+/* Problem panel */
+#problemPanel{
+  background:var(--surface);
+  border-bottom:1px solid var(--border2);
+  padding:14px 20px;
+  flex-shrink:0;
+  overflow-y:auto;
+  min-height:64px;
+  max-height:40vh;
+}
+.prob-top{display:flex;align-items:flex-start;gap:12px;margin-bottom:8px}
+.prob-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:3px 10px;
+  border-radius:20px;
+  font-size:0.67rem;font-weight:700;
+  text-transform:uppercase;letter-spacing:0.8px;
+  flex-shrink:0;margin-top:2px;
+}
+.badge-print{background:rgba(66,200,245,0.12);color:var(--sky);border:1px solid rgba(66,200,245,0.25)}
+.badge-var{background:rgba(245,185,66,0.12);color:var(--amber);border:1px solid rgba(245,185,66,0.25)}
+.badge-input{background:rgba(61,245,193,0.12);color:var(--neon);border:1px solid rgba(61,245,193,0.25)}
+.badge-condition{background:rgba(245,75,122,0.12);color:var(--rose);border:1px solid rgba(245,75,122,0.25)}
+.badge-loop{background:rgba(157,126,255,0.12);color:var(--accent-hi);border:1px solid rgba(157,126,255,0.25)}
+.badge-func{background:rgba(245,185,66,0.12);color:var(--amber);border:1px solid rgba(245,185,66,0.25)}
+.prob-title{font-size:0.98rem;font-weight:700;color:var(--text);line-height:1.4}
+.prob-desc{font-size:0.82rem;color:var(--text2);line-height:1.65}
+.prob-desc code{
+  font-family:'Noto Sans Thai',sans-serif;
+  font-size:0.78rem;
+  background:var(--surface3);
+  padding:1px 5px;border-radius:4px;
+  color:var(--neon);
+}
+.hint-row{margin-top:10px}
+.hint-btn{
+  background:none;
+  border:1px dashed rgba(110,86,207,0.35);
+  color:var(--accent-hi);
+  font-family:'Noto Sans Thai',sans-serif;
+  font-size:0.72rem;font-weight:600;
+  padding:4px 12px;border-radius:20px;
+  cursor:pointer;
+  transition:all 0.15s;
+}
+.hint-btn:hover{background:rgba(110,86,207,0.1);border-style:solid}
+.hint-box{
+  margin-top:8px;padding:10px 14px;
+  background:rgba(110,86,207,0.08);
+  border:1px solid rgba(110,86,207,0.2);
+  border-radius:var(--r-sm);
+  font-size:0.8rem;color:var(--accent-hi);
+  display:none;
+  gap:8px;align-items:flex-start;
+  line-height:1.6;
+}
+.hint-box.show{display:flex}
+
+/* Resize handle */
+#resizer{
+  height:5px;
+  background:var(--border2);
+  cursor:ns-resize;
+  flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  transition:background 0.15s;
+}
+#resizer:hover,#resizer.active{background:var(--accent)}
+#resizer::after{
+  content:'';
+  width:28px;height:2px;
+  border-radius:1px;
+  background:var(--text3);
+  opacity:0.5;
+}
+
+/* ══════════════════════════════════════════
+   EDITOR AREA
+══════════════════════════════════════════ */
+.editor-area{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  flex:1;min-height:0;
+  overflow:hidden;
+}
+.editor-pane{
+  display:flex;flex-direction:column;
+  border-right:1px solid var(--border2);
+  overflow:hidden;
+  background:var(--bg);
+}
+.pane-head{
+  padding:7px 14px;
+  background:var(--surface);
+  border-bottom:1px solid var(--border2);
+  font-size:0.72rem;font-weight:600;
+  color:var(--text2);
+  display:flex;align-items:center;gap:8px;
+  flex-shrink:0;
+}
+.macos-dots{display:flex;gap:5px}
+.macos-dot{width:10px;height:10px;border-radius:50%}
+.pane-filename{color:var(--text);font-family:'Noto Sans Thai',sans-serif;font-size:0.75rem}
+.pane-lang{
+  margin-left:auto;
+  font-size:0.65rem;
+  padding:2px 6px;
+  background:var(--surface3);
+  border-radius:4px;
+  color:var(--text3);
+}
+#editorContainer{flex:1;overflow:hidden}
+
+/* Output pane */
+.output-pane{
+  display:flex;flex-direction:column;
+  background:var(--bg2);
+  overflow:hidden;
+}
+#outputContent{
+  flex:1;
+  padding:14px 16px;
+  font-family:'Noto Sans Thai',sans-serif;
+  font-size:0.78rem;
+  line-height:1.75;
+  overflow-y:auto;
+  color:var(--text);
+}
+.ol{white-space:pre-wrap;word-break:break-all;margin-bottom:1px}
+.ol-sys{color:var(--text3);font-style:italic}
+.ol-err{color:var(--rose)}
+.ol-inp{color:var(--sky)}
+.ol-ok{color:var(--neon)}
+
+/* stdin input row */
+#inputRow{
+  display:none;
+  align-items:center;gap:0;
+  border-top:1px solid rgba(66,200,245,0.2);
+  background:rgba(66,200,245,0.05);
+  flex-shrink:0;
+}
+#inputRow.show{display:flex}
+.input-prompt{
+  padding:8px 12px;
+  font-family:'Noto Sans Thai',sans-serif;
+  font-size:0.78rem;
+  color:var(--sky);
+  border-right:1px solid rgba(66,200,245,0.2);
+  flex-shrink:0;
+}
+#stdinInput{
+  flex:1;padding:8px 12px;
+  background:transparent;border:none;outline:none;
+  font-family:'Noto Sans Thai',sans-serif;
+  font-size:0.78rem;color:var(--text);
+}
+#stdinInput::placeholder{color:var(--text3)}
+
+/* Result panel */
+#resultPanel{
+  max-height:0;overflow:hidden;
+  transition:max-height 0.35s cubic-bezier(0.4,0,0.2,1);
+  background:var(--surface);
+  border-top:1px solid var(--border2);
+  flex-shrink:0;
+}
+#resultPanel.show{max-height:200px}
+.result-inner{padding:12px 20px}
+.result-pass{
+  display:flex;align-items:flex-start;gap:14px;
+  padding:12px 16px;
+  background:rgba(61,245,193,0.07);
+  border:1px solid rgba(61,245,193,0.2);
+  border-radius:var(--r-sm);
+}
+.result-fail{
+  display:flex;flex-direction:column;gap:8px;
+  padding:12px 16px;
+  background:rgba(245,75,122,0.07);
+  border:1px solid rgba(245,75,122,0.2);
+  border-radius:var(--r-sm);
+}
+.result-icon{font-size:1.5rem;flex-shrink:0;line-height:1}
+.result-title{font-weight:700;font-size:0.9rem}
+.result-sub{font-size:0.74rem;color:var(--text2);margin-top:2px;font-family:'Noto Sans Thai',sans-serif;line-height:1.5}
+.tc-row{
+  display:flex;align-items:center;gap:8px;
+  font-size:0.76rem;padding:2px 0;
+  flex-wrap:wrap;
+}
+.tc-pass{color:var(--neon)}
+.tc-fail{color:var(--rose)}
+.tc-label{color:var(--text2)}
+.tc-code{
+  font-family:'Noto Sans Thai',sans-serif;
+  font-size:0.72rem;
+  padding:0 4px;
+  border-radius:3px;
+}
+.tc-exp{background:rgba(61,245,193,0.1);color:var(--neon)}
+.tc-got{background:rgba(245,75,122,0.1);color:var(--rose)}
+
+/* ══════════════════════════════════════════
+   ACTION BAR
+══════════════════════════════════════════ */
+#actionBar{
+  padding:10px 16px;
+  background:var(--surface);
+  border-top:1px solid var(--border2);
+  display:flex;align-items:center;gap:8px;
+  flex-shrink:0;
+}
+.abtn{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:8px 18px;
+  border-radius:var(--r-sm);
+  border:none;cursor:pointer;
+  font-family:'Noto Sans Thai',sans-serif;
+  font-size:0.83rem;font-weight:700;
+  transition:all 0.2s;
+}
+.abtn:disabled{opacity:0.45;cursor:not-allowed;transform:none!important}
+.abtn-run{
+  background:linear-gradient(135deg,var(--accent),var(--accent-hi));
+  color:#fff;
+  box-shadow:0 4px 16px rgba(110,86,207,0.35);
+}
+.abtn-run:not(:disabled):hover{transform:translateY(-1px);box-shadow:0 6px 24px rgba(110,86,207,0.5)}
+.abtn-check{
+  background:linear-gradient(135deg,var(--neon-dim),var(--neon));
+  color:#0a0b12;
+  box-shadow:0 4px 16px rgba(61,245,193,0.25);
+}
+.abtn-check:not(:disabled):hover{transform:translateY(-1px);box-shadow:0 6px 24px rgba(61,245,193,0.4)}
+.abtn-clear{
+  background:var(--surface2);
+  color:var(--text2);
+  border:1px solid var(--border);
+}
+.abtn-clear:hover{background:var(--surface3);color:var(--text)}
+.abtn-next{
+  margin-left:auto;
+  background:linear-gradient(135deg,var(--amber) 0%,#f5742b 100%);
+  color:#0a0b12;
+  box-shadow:0 4px 16px rgba(245,185,66,0.3);
+  display:none;
+}
+.abtn-next:hover{transform:translateY(-1px);box-shadow:0 6px 24px rgba(245,185,66,0.45)}
+.run-spinner{display:none;margin-left:auto;animation:spin 0.8s linear infinite;font-size:0.9rem}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ══════════════════════════════════════════
+   TOAST NOTIFICATIONS
+══════════════════════════════════════════ */
+#toastContainer{
+  position:fixed;bottom:20px;right:20px;
+  z-index:9000;
+  display:flex;flex-direction:column;gap:8px;align-items:flex-end;
+  pointer-events:none;
+}
+.toast{
+  display:flex;align-items:flex-start;gap:10px;
+  padding:10px 14px;
+  border-radius:var(--r-sm);
+  font-size:0.78rem;font-weight:600;
+  background:var(--surface2);
+  border:1px solid var(--border2);
+  box-shadow:var(--shadow-card);
+  pointer-events:auto;
+  max-width:320px;
+  transform:translateX(120%);opacity:0;
+  transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1),opacity 0.3s ease;
+}
+.toast.in{transform:translateX(0);opacity:1}
+.toast.out{transform:translateX(120%);opacity:0;transition:transform 0.2s,opacity 0.2s}
+.toast-ok{border-left:3px solid var(--neon);color:var(--neon)}
+.toast-err{border-left:3px solid var(--rose);color:var(--rose)}
+.toast-info{border-left:3px solid var(--sky);color:var(--sky)}
+.toast-msg{flex:1;color:var(--text);line-height:1.4}
+.toast-x{
+  background:none;border:none;cursor:pointer;
+  color:var(--text3);font-size:0.9rem;
+  padding:0 0 0 4px;transition:color 0.15s;
+}
+.toast-x:hover{color:var(--text)}
+
+/* ══════════════════════════════════════════
+   SAVE MODAL
+══════════════════════════════════════════ */
+.modal-bg{
+  position:fixed;inset:0;
+  background:rgba(0,0,0,0.7);
+  backdrop-filter:blur(6px);
+  z-index:500;
+  display:none;
+  align-items:center;justify-content:center;
+}
+.modal-bg.show{display:flex}
+.modal-box{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--r-xl);
+  padding:28px;
+  width:380px;
+  box-shadow:var(--shadow-glow);
+  animation:modalIn 0.25s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes modalIn{from{transform:scale(0.9);opacity:0}to{transform:scale(1);opacity:1}}
+.modal-title{font-size:1.05rem;font-weight:800;margin-bottom:6px}
+.modal-sub{font-size:0.8rem;color:var(--text2);line-height:1.5;margin-bottom:20px}
+.modal-label{font-size:0.75rem;color:var(--text2);margin-bottom:5px;display:block}
+.modal-input{
+  width:100%;padding:9px 12px;
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:var(--r-sm);
+  color:var(--text);
+  font-family:'Noto Sans Thai',sans-serif;
+  font-size:0.85rem;outline:none;
+  transition:border-color 0.15s;
+}
+.modal-input:focus{border-color:var(--accent)}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:20px}
+.modal-btn{
+  padding:8px 18px;border-radius:var(--r-sm);border:none;
+  cursor:pointer;font-family:'Noto Sans Thai',sans-serif;
+  font-size:0.83rem;font-weight:700;transition:all 0.15s;
+}
+.modal-primary{
+  background:linear-gradient(135deg,var(--accent),var(--accent-hi));
+  color:#fff;
+}
+.modal-primary:hover{transform:translateY(-1px)}
+.modal-cancel{
+  background:var(--surface3);color:var(--text2);
+  border:1px solid var(--border);
+}
+.modal-cancel:hover{background:var(--surface4)}
+
+/* Confetti burst */
+.confetti{
+  position:fixed;pointer-events:none;z-index:9999;
+  font-size:1.8rem;
+  animation:confettiBurst 1.1s ease forwards;
+}
+@keyframes confettiBurst{
+  0%{transform:scale(0) translateY(0) rotate(0deg);opacity:1}
+  100%{transform:scale(1.4) translateY(-90px) rotate(720deg);opacity:0}
+}
+
+/* ══════════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════════ */
+@media(max-width:860px){
+  #app{grid-template-columns:1fr}
+  #sidebar{display:none}
+  .editor-area{grid-template-columns:1fr;grid-template-rows:1fr 1fr}
+}
 </style>
 </head>
 <body>
 
-<div class="loading-overlay" id="loadingOverlay">
-  <div class="loading-snake">🐍</div>
-  <div class="loading-title">Python Adventure</div>
-  <div class="loading-bar"><div class="loading-fill" id="loadingFill" style="width:0%"></div></div>
-  <div class="loading-text" id="loadingText">กำลังโหลด Pyodide...</div>
+<!-- LOADING -->
+<div id="loadingOverlay">
+  <div class="load-snake">🐍</div>
+  <div class="load-brand">Python Adventure</div>
+  <div class="load-bar"><div class="load-fill" id="loadFill" style="width:0%"></div></div>
+  <div class="load-txt" id="loadTxt">กำลังโหลด Pyodide...</div>
 </div>
 
-<header>
-  <!-- Brand -->
+<!-- HEADER -->
+<header id="appHeader">
   <div class="brand">
-    <span class="logo">🐍</span>
+    <div class="brand-icon">🐍</div>
     <span class="brand-name">Python Adventure</span>
   </div>
+  <div class="vsep"></div>
 
-  <div class="nav-sep"></div>
-
-  <!-- Python status -->
-  <div class="py-status">
-    <div class="status-dot" id="statusDot"></div>
-    <span id="statusText">กำลังโหลด</span>
+  <!-- Status -->
+  <div class="py-badge">
+    <div class="py-dot" id="pyDot"></div>
+    <span id="pyStatus">กำลังโหลด</span>
   </div>
 
   <!-- Score -->
-  <div class="score-pill">
+  <div class="score-chip" id="scoreChip">
     <span>⭐</span>
-    <strong id="scoreDisplay">0</strong>
-    <span style="color:var(--border)">/</span>
-    <span id="totalDisplay">20</span>
+    <span class="score-num" id="scoreNum">0</span>
+    <span class="score-sep">/</span>
+    <span class="score-total" id="scoreTotal">0</span>
+    <span style="color:var(--text3);font-size:0.72rem">คะแนน</span>
   </div>
 
-  <div class="nav-sep"></div>
+  <div class="vsep"></div>
 
-  <!-- Exercises section -->
-  <button class="nav-icon-btn cyan" onclick="loadDefaultJson()" id="reloadJsonBtn" title="โหลดโจทย์จาก GitHub">
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.12"/></svg>
+  <!-- Load exercises -->
+  <button class="hbtn hbtn-sky" id="reloadBtn" onclick="loadDefaultJson()" title="โหลดโจทย์จาก GitHub">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.12"/></svg>
     โหลดโจทย์
   </button>
-  <button class="nav-icon-btn purple" onclick="document.getElementById('jsonFileInput').click()" title="เพิ่มโจทย์จากไฟล์ .json">
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+  <button class="hbtn hbtn-purple" onclick="document.getElementById('jsonFileIn').click()" title="เพิ่มโจทย์จากไฟล์">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
     เพิ่มโจทย์
   </button>
-  <input type="file" id="jsonFileInput" accept=".json" onchange="loadFromFile(event)" style="display:none"/>
+  <input type="file" id="jsonFileIn" accept=".json" onchange="handleJsonFile(event)" style="display:none">
 
-  <div class="nav-sep"></div>
+  <div class="vsep"></div>
 
-  <!-- Progress section -->
-  <button class="nav-icon-btn green" onclick="saveProgress()" title="บันทึก progress">
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+  <!-- Progress -->
+  <button class="hbtn hbtn-green" onclick="openSaveModal()" title="บันทึก Progress">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
     บันทึก
   </button>
-  <button class="nav-icon-btn yellow" onclick="document.getElementById('progressFileInput').click()" title="โหลด progress">
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+  <button class="hbtn hbtn-amber" onclick="document.getElementById('progressFileIn').click()" title="โหลด Progress">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
     โหลด Progress
   </button>
-  <input type="file" id="progressFileInput" accept=".mxr" onchange="loadProgress(event)" style="display:none"/>
+  <input type="file" id="progressFileIn" accept=".mxr" onchange="loadProgress(event)" style="display:none">
 
-  <div class="nav-sep"></div>
+  <div class="vsep"></div>
 
-  <!-- Theme toggle -->
-  <button class="nav-icon-btn" id="themeBtn" onclick="toggleTheme()" title="เปลี่ยน theme">
-    <svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Theme -->
+  <button class="hbtn" id="themeBtn" onclick="toggleTheme()">
+    <svg id="themeIco" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
       <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
       <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
@@ -424,386 +786,440 @@
   </button>
 </header>
 
-<!-- Toast container -->
-<div id="toast-container"></div>
+<!-- Progress strip -->
+<div id="progressBar"><div id="progressFill" style="width:0%"></div></div>
 
-<div class="progress-bar">
-  <div class="progress-fill" id="progressFill" style="width:0%"></div>
-</div>
+<!-- Toasts -->
+<div id="toastContainer"></div>
 
+<!-- APP -->
+<div id="app">
 
-<div class="app">
-  <aside class="sidebar" id="sidebar"></aside>
-  <div class="main">
-    <div class="problem-panel">
-      <div class="problem-header">
-        <div class="problem-badge" id="problemBadge"></div>
-        <div>
-          <div class="problem-title" id="problemTitle"></div>
-          <div class="problem-desc" id="problemDesc"></div>
+  <!-- SIDEBAR -->
+  <aside id="sidebar">
+    <div class="sidebar-inner" id="sidebarInner"></div>
+    <div class="sidebar-footer">
+      <div class="sidebar-stats">
+        <div class="stat-card">
+          <span class="stat-val" id="statDone">0</span>
+          <div class="stat-lbl">ผ่านแล้ว</div>
+        </div>
+        <div class="stat-card">
+          <span class="stat-val" id="statTotal">0</span>
+          <div class="stat-lbl">ทั้งหมด</div>
         </div>
       </div>
-      <button class="hint-toggle" id="hintToggle" onclick="toggleHint()">💡 แสดง hint</button>
-      <div class="hint-box" id="hintBox" style="display:none">
-        <span>💡</span><span id="hintText"></span>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div id="main">
+
+    <!-- Problem panel -->
+    <div id="problemPanel">
+      <div class="prob-top">
+        <div class="prob-badge" id="probBadge"></div>
+        <div style="flex:1">
+          <div class="prob-title" id="probTitle">เลือกโจทย์จากซ้ายมือ</div>
+          <div class="prob-desc" id="probDesc">กด "โหลดโจทย์" เพื่อโหลดโจทย์จาก GitHub หรือ "เพิ่มโจทย์" เพื่อเพิ่มไฟล์ .json ของคุณ</div>
+        </div>
+      </div>
+      <div class="hint-row">
+        <button class="hint-btn" id="hintBtn" onclick="toggleHint()">💡 ดู hint</button>
+        <div class="hint-box" id="hintBox">
+          <span>💡</span>
+          <span id="hintTxt"></span>
+        </div>
       </div>
     </div>
 
-    <div class="panel-resizer" id="panelResizer"></div>
+    <!-- Resize handle -->
+    <div id="resizer"></div>
 
+    <!-- Editor + Output -->
     <div class="editor-area">
+      <!-- Editor -->
       <div class="editor-pane">
-        <div class="pane-header">
-          <div class="pane-dot" style="background:#fc5c5c"></div>
-          <div class="pane-dot" style="background:#fcdc5c"></div>
-          <div class="pane-dot" style="background:#5cfc9c"></div>
-          <span style="margin-left:4px">main.py</span>
+        <div class="pane-head">
+          <div class="macos-dots">
+            <div class="macos-dot" style="background:#ff5f57"></div>
+            <div class="macos-dot" style="background:#febc2e"></div>
+            <div class="macos-dot" style="background:#28c840"></div>
+          </div>
+          <span class="pane-filename">main.py</span>
+          <span class="pane-lang">Python 3</span>
         </div>
-        <div id="editor-container"></div>
+        <div id="editorContainer"></div>
       </div>
+      <!-- Output -->
       <div class="output-pane">
-        <div class="pane-header">
-          <div class="pane-dot" style="background:var(--accent3)"></div>
-          <span>Output</span>
-          <span id="runSpinner" style="margin-left:auto;display:none">⏳</span>
+        <div class="pane-head">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--neon)" stroke-width="2.5"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+          <span style="color:var(--neon)">Output</span>
+          <span id="runSpinner" class="run-spinner">⟳</span>
         </div>
-        <div class="output-content" id="outputContent">
-          <div class="out-line out-sys">// ผลลัพธ์ของโปรแกรมจะแสดงที่นี่ 🎯</div>
+        <div id="outputContent">
+          <div class="ol ol-sys">// ผลลัพธ์จะแสดงที่นี่ 🎯</div>
         </div>
-        <div class="input-line-container" id="inputContainer">
-          <span>▶</span>
-          <input type="text" id="inputField" placeholder="พิมพ์ค่า input แล้วกด Enter..." autocomplete="off"/>
+        <div id="inputRow">
+          <div class="input-prompt">▶ input:</div>
+          <input type="text" id="stdinInput" placeholder="พิมพ์แล้วกด Enter..." autocomplete="off">
         </div>
       </div>
     </div>
 
-    <div class="result-panel" id="resultPanel">
-      <div class="result-inner" id="resultInner"></div>
-    </div>
+    <!-- Result -->
+    <div id="resultPanel"><div id="resultInner" class="result-inner"></div></div>
 
-    <div class="action-bar">
-      <button class="btn btn-run" id="runBtn" onclick="runCode()" disabled>▶ รันโปรแกรม</button>
-      <button class="btn btn-check" id="checkBtn" onclick="checkAnswer()" disabled>✓ ตรวจคำตอบ</button>
-      <button class="btn btn-clear" onclick="clearOutput()">🗑 ล้าง</button>
-      <button class="btn btn-next" id="nextBtn" onclick="nextExercise()" style="display:none">ข้อถัดไป →</button>
+    <!-- Action bar -->
+    <div id="actionBar">
+      <button class="abtn abtn-run" id="runBtn" onclick="runCode()" disabled>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        รัน
+      </button>
+      <button class="abtn abtn-check" id="checkBtn" onclick="checkAnswer()" disabled>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        ตรวจคำตอบ
+      </button>
+      <button class="abtn abtn-clear" onclick="clearOutput()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+        ล้าง
+      </button>
+      <button class="abtn abtn-next" id="nextBtn" onclick="nextExercise()">
+        ข้อถัดไป
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </button>
     </div>
   </div>
 </div>
 
 <!-- SAVE MODAL -->
-<div class="modal-overlay" id="saveModal" style="display:none" onclick="if(event.target===this)closeSaveModal()">
+<div class="modal-bg" id="saveModal" onclick="if(event.target===this)closeSaveModal()">
   <div class="modal-box">
     <div class="modal-title">💾 บันทึก Progress</div>
-    <div class="modal-sub">ไฟล์จะถูกบันทึกเป็น <b>.mxr</b><br>สามารถโหลดกลับมาเรียนต่อได้ในภายหลัง</div>
-    <div class="modal-field">
-      <label>ชื่อผู้เรียน (ใส่หรือไม่ก็ได้)</label>
-      <input type="text" id="saveNameInput" placeholder="เช่น น้องหมี" maxlength="40" />
-    </div>
+    <div class="modal-sub">ไฟล์ .mxr จะถูกดาวน์โหลด<br>สามารถนำกลับมาโหลดต่อได้ในภายหลัง</div>
+    <label class="modal-label">ชื่อผู้เรียน (ไม่จำเป็น)</label>
+    <input class="modal-input" type="text" id="saveNameIn" placeholder="เช่น น้องมะลิ" maxlength="40">
     <div class="modal-actions">
-      <button class="modal-btn modal-btn-cancel" onclick="closeSaveModal()">ยกเลิก</button>
-      <button class="modal-btn modal-btn-primary" onclick="confirmSave()">💾 บันทึกไฟล์</button>
+      <button class="modal-btn modal-cancel" onclick="closeSaveModal()">ยกเลิก</button>
+      <button class="modal-btn modal-primary" onclick="confirmSave()">💾 บันทึก</button>
     </div>
   </div>
 </div>
 
 <script>
-// ── EXERCISES (โหลดจาก JSON) ───────────────────────────────
+/* ══════════════════════════════════════════
+   STATE
+══════════════════════════════════════════ */
 let exercises = [];
-
-// ── STATE ──────────────────────────────────────────────────
 let currentIdx = 0;
 const completed = new Set();
 let score = 0;
-let monacoEditor = null;
+let editor = null;
 let pyodideReady = false;
 let pyodide = null;
-// For manual input (when no auto-queue)
-let inputQueue = [];
 let inputCallback = null;
+let currentTheme = localStorage.getItem('pa-theme') || 'dark';
 
-// ── PYODIDE LOAD ───────────────────────────────────────────
+/* ══════════════════════════════════════════
+   LOADING
+══════════════════════════════════════════ */
+function setLoad(pct, txt) {
+  document.getElementById('loadFill').style.width = pct + '%';
+  document.getElementById('loadTxt').textContent = txt;
+}
+
 async function loadPyodideEngine() {
   try {
-    setLoading(10, "กำลังโหลด Pyodide...");
+    setLoad(10, 'กำลังโหลด Pyodide...');
     const s = document.createElement('script');
     s.src = 'https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js';
     document.head.appendChild(s);
     await new Promise((ok, err) => { s.onload = ok; s.onerror = err; });
 
-    setLoading(45, "กำลังเริ่มต้น Python runtime...");
-    pyodide = await window.loadPyodide({
-      indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.25.0/full/'
-    });
+    setLoad(45, 'กำลังเริ่มต้น Python runtime...');
+    pyodide = await window.loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.25.0/full/' });
 
-    setLoading(80, "กำลังโหลด Monaco Editor...");
+    setLoad(80, 'กำลังโหลด Code Editor...');
     await loadMonaco();
 
-    setLoading(100, "พร้อมแล้ว! 🎉");
+    setLoad(100, 'พร้อมแล้ว! 🎉');
     pyodideReady = true;
-    document.getElementById('statusDot').className = 'status-dot ready';
-    document.getElementById('statusText').textContent = 'Python พร้อม';
+    document.getElementById('pyDot').className = 'py-dot ready';
+    document.getElementById('pyStatus').textContent = 'Python พร้อม';
     document.getElementById('runBtn').disabled = false;
     document.getElementById('checkBtn').disabled = false;
 
     setTimeout(() => {
       const ov = document.getElementById('loadingOverlay');
-      ov.style.transition = 'opacity 0.5s';
+      ov.style.transition = 'opacity 0.6s';
       ov.style.opacity = '0';
-      setTimeout(() => ov.style.display = 'none', 500);
-    }, 300);
+      setTimeout(() => ov.style.display = 'none', 600);
+    }, 350);
   } catch(e) {
-    document.getElementById('statusDot').className = 'status-dot error';
-    document.getElementById('statusText').textContent = 'โหลดล้มเหลว';
-    document.getElementById('loadingText').textContent = 'Error: ' + e.message;
+    document.getElementById('pyDot').className = 'py-dot error';
+    document.getElementById('pyStatus').textContent = 'โหลดล้มเหลว';
+    document.getElementById('loadTxt').textContent = 'Error: ' + e.message;
   }
 }
 
-function setLoading(pct, txt) {
-  document.getElementById('loadingFill').style.width = pct + '%';
-  document.getElementById('loadingText').textContent = txt;
-}
-
+/* ══════════════════════════════════════════
+   MONACO EDITOR
+══════════════════════════════════════════ */
 function loadMonaco() {
   return new Promise(resolve => {
-    require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs' } });
+    require.config({ paths: { vs: 'https://unpkg.com/monaco-editor@0.45.0/min/vs' } });
     require(['vs/editor/editor.main'], () => {
 
-      // ── Dark theme ──
-      monaco.editor.defineTheme('pyAdventure', {
-        base:'vs-dark', inherit:true,
-        rules:[
-          {token:'comment',foreground:'6272a4',fontStyle:'italic'},
-          {token:'keyword',foreground:'ff79c6',fontStyle:'bold'},
-          {token:'string',foreground:'f1fa8c'},
-          {token:'number',foreground:'bd93f9'},
-          {token:'type',foreground:'8be9fd'},
-          {token:'function',foreground:'50fa7b'},
-          {token:'variable',foreground:'f8f8f2'},
+      const darkColors = {
+        'editor.background': '#0a0b12',
+        'editor.foreground': '#e5e8ff',
+        'editorLineNumber.foreground': '#2a2d45',
+        'editorLineNumber.activeForeground': '#6e56cf',
+        'editor.selectionBackground': '#6e56cf33',
+        'editor.lineHighlightBackground': '#13151f',
+        'editorCursor.foreground': '#9d7eff',
+        'editorSuggestWidget.background': '#13151f',
+        'editorSuggestWidget.border': '#6e56cf44',
+        'editorSuggestWidget.selectedBackground': '#6e56cf22',
+        'editorHoverWidget.background': '#13151f',
+        'editorHoverWidget.border': '#6e56cf44',
+      };
+      const lightColors = {
+        'editor.background': '#f8f9ff',
+        'editor.foreground': '#1c1e30',
+        'editorLineNumber.foreground': '#b0b4d4',
+        'editorLineNumber.activeForeground': '#5e40cc',
+        'editor.selectionBackground': '#5e40cc22',
+        'editor.lineHighlightBackground': '#eef0fa',
+        'editorCursor.foreground': '#5e40cc',
+        'editorSuggestWidget.background': '#ffffff',
+        'editorSuggestWidget.border': '#5e40cc33',
+        'editorSuggestWidget.selectedBackground': '#ede9fe',
+        'editorHoverWidget.background': '#ffffff',
+        'editorHoverWidget.border': '#5e40cc33',
+      };
+
+      monaco.editor.defineTheme('paDark', {
+        base: 'vs-dark', inherit: true,
+        rules: [
+          { token: 'comment', foreground: '4a4f70', fontStyle: 'italic' },
+          { token: 'keyword', foreground: 'bd93f9', fontStyle: 'bold' },
+          { token: 'string', foreground: 'f1fa8c' },
+          { token: 'number', foreground: '9d7eff' },
+          { token: 'support.function', foreground: '3df5c1' },
+          { token: 'identifier', foreground: 'e5e8ff' },
+          { token: 'operator', foreground: 'ff79c6' },
+          { token: 'metatag', foreground: '42c8f5' },
         ],
-        colors:{
-          'editor.background':'#0d0f1a',
-          'editor.foreground':'#e8eaff',
-          'editorLineNumber.foreground':'#3d4070',
-          'editorLineNumber.activeForeground':'#7c5cfc',
-          'editor.selectionBackground':'#44475a80',
-          'editor.lineHighlightBackground':'#1c1f3540',
-          'editorCursor.foreground':'#7c5cfc',
-          'editorSuggestWidget.background':'#1c1f35',
-          'editorSuggestWidget.border':'#7c5cfc40',
-          'editorSuggestWidget.selectedBackground':'#7c5cfc30',
-          'editorHoverWidget.background':'#1c1f35',
-          'editorHoverWidget.border':'#7c5cfc40',
+        colors: darkColors,
+      });
+
+      monaco.editor.defineTheme('paLight', {
+        base: 'vs', inherit: true,
+        rules: [
+          { token: 'comment', foreground: '8c90b8', fontStyle: 'italic' },
+          { token: 'keyword', foreground: '5e40cc', fontStyle: 'bold' },
+          { token: 'string', foreground: '8b4513' },
+          { token: 'number', foreground: '5e40cc' },
+          { token: 'support.function', foreground: '0d7a57' },
+          { token: 'identifier', foreground: '1c1e30' },
+          { token: 'operator', foreground: '9333ea' },
+          { token: 'metatag', foreground: '0284c7' },
+        ],
+        colors: lightColors,
+      });
+
+      // Python tokenizer
+      monaco.languages.setMonarchTokensProvider('python', {
+        keywords: ['and','as','assert','async','await','break','class','continue','def','del','elif','else','except','finally','for','from','global','if','import','in','is','lambda','nonlocal','not','or','pass','raise','return','try','while','with','yield'],
+        builtins: ['print','input','int','float','str','bool','list','dict','set','tuple','len','range','abs','round','max','min','sum','type','sorted','enumerate','zip','map','filter','open','super','object','Exception','True','False','None'],
+        tokenizer: {
+          root: [
+            [/^\s*@\w+/, 'metatag'],
+            [/#.*$/, 'comment'],
+            [/"""/, { token: 'string', next: '@tdq' }],
+            [/'''/, { token: 'string', next: '@tsq' }],
+            [/"/, { token: 'string', next: '@dq' }],
+            [/'/, { token: 'string', next: '@sq' }],
+            [/0[xX][0-9a-fA-F]+/, 'number.hex'],
+            [/\d+\.\d*([eE][\-+]?\d+)?/, 'number.float'],
+            [/\d+/, 'number'],
+            [/[a-zA-Z_]\w*/, { cases: { '@keywords': 'keyword', '@builtins': 'support.function', '@default': 'identifier' } }],
+            [/[+\-*/%&|^~<>!=]=?|\/\/=?|\*\*=?/, 'operator'],
+            [/[(){}\[\],.:;]/, 'delimiter'],
+          ],
+          dq: [[/[^"\\]+/, 'string'], [/\\./, 'string.escape'], [/"/, { token: 'string', next: '@pop' }]],
+          sq: [[/[^'\\]+/, 'string'], [/\\./, 'string.escape'], [/'/, { token: 'string', next: '@pop' }]],
+          tdq: [[/[^"\\]+/, 'string'], [/\\./, 'string.escape'], [/"""/, { token: 'string', next: '@pop' }], [/"/, 'string']],
+          tsq: [[/[^'\\]+/, 'string'], [/\\./, 'string.escape'], [/'''/, { token: 'string', next: '@pop' }], [/'/, 'string']],
         }
       });
 
-      // ── Light theme ──
-      monaco.editor.defineTheme('pyAdventureLight', {
-        base:'vs', inherit:true,
-        rules:[
-          {token:'comment',foreground:'6272a4',fontStyle:'italic'},
-          {token:'keyword',foreground:'8b2fc9',fontStyle:'bold'},
-          {token:'string',foreground:'b45309'},
-          {token:'number',foreground:'6a3ff5'},
-          {token:'type',foreground:'0891b2'},
-          {token:'function',foreground:'16a34a'},
-          {token:'variable',foreground:'1a1d3a'},
-        ],
-        colors:{
-          'editor.background':'#f8f9ff',
-          'editor.foreground':'#1a1d3a',
-          'editorLineNumber.foreground':'#a0a4c8',
-          'editorLineNumber.activeForeground':'#6a3ff5',
-          'editor.selectionBackground':'#c4b5fd50',
-          'editor.lineHighlightBackground':'#eef0fa',
-          'editorCursor.foreground':'#6a3ff5',
-          'editorSuggestWidget.background':'#ffffff',
-          'editorSuggestWidget.border':'#6a3ff520',
-          'editorSuggestWidget.selectedBackground':'#eef0fa',
-          'editorHoverWidget.background':'#ffffff',
-          'editorHoverWidget.border':'#6a3ff520',
-        }
-      });
-
-      // ── Python IntelliSense ──
-      const BUILTINS = [
-        // functions
-        {label:'print',kind:1,doc:'print(*objects, sep=\" \", end=\"\\n\", file=sys.stdout)\n\nแสดงผลลัพธ์ออกทางหน้าจอ',insert:'print(${1:})'},
-        {label:'input',kind:1,doc:'input(prompt=\"\")\n\nรับค่าจาก keyboard เป็น string',insert:'input(${1:})'},
-        {label:'int',kind:1,doc:'int(x)\n\nแปลงค่าเป็นจำนวนเต็ม',insert:'int(${1:})'},
-        {label:'float',kind:1,doc:'float(x)\n\nแปลงค่าเป็นทศนิยม',insert:'float(${1:})'},
-        {label:'str',kind:1,doc:'str(object)\n\nแปลงค่าเป็นข้อความ',insert:'str(${1:})'},
-        {label:'bool',kind:1,doc:'bool(x)\n\nแปลงค่าเป็น True/False',insert:'bool(${1:})'},
-        {label:'len',kind:1,doc:'len(s)\n\nนับจำนวน elements',insert:'len(${1:})'},
-        {label:'range',kind:1,doc:'range(stop) | range(start, stop[, step])\n\nสร้าง sequence ตัวเลข',insert:'range(${1:})'},
-        {label:'abs',kind:1,doc:'abs(x)\n\nค่าสัมบูรณ์ของ x',insert:'abs(${1:})'},
-        {label:'round',kind:1,doc:'round(number, ndigits=None)\n\nปัดเศษทศนิยม',insert:'round(${1:})'},
-        {label:'max',kind:1,doc:'max(iterable) | max(a, b, ...)\n\nหาค่าสูงสุด',insert:'max(${1:})'},
-        {label:'min',kind:1,doc:'min(iterable) | min(a, b, ...)\n\nหาค่าต่ำสุด',insert:'min(${1:})'},
-        {label:'sum',kind:1,doc:'sum(iterable)\n\nรวมค่าทั้งหมด',insert:'sum(${1:})'},
-        {label:'type',kind:1,doc:'type(object)\n\nดู type ของ object',insert:'type(${1:})'},
-        {label:'list',kind:1,doc:'list(iterable)\n\nสร้าง list',insert:'list(${1:})'},
-        {label:'sorted',kind:1,doc:'sorted(iterable, reverse=False)\n\nเรียงลำดับ',insert:'sorted(${1:})'},
-        {label:'enumerate',kind:1,doc:'enumerate(iterable, start=0)\n\nวนพร้อม index',insert:'enumerate(${1:})'},
-        {label:'zip',kind:1,doc:'zip(*iterables)\n\nรวม iterables คู่กัน',insert:'zip(${1:})'},
-        {label:'map',kind:1,doc:'map(function, iterable)\n\nใช้ function กับทุก element',insert:'map(${1:}, ${2:})'},
-        {label:'filter',kind:1,doc:'filter(function, iterable)\n\nกรอง elements',insert:'filter(${1:}, ${2:})'},
-        // keywords with snippets
-        {label:'if',kind:14,doc:'if condition:\n    # code',insert:'if ${1:condition}:\n    ${2:pass}'},
-        {label:'elif',kind:14,doc:'elif condition:\n    # code',insert:'elif ${1:condition}:\n    ${2:pass}'},
-        {label:'else',kind:14,doc:'else:\n    # code',insert:'else:\n    ${1:pass}'},
-        {label:'for',kind:14,doc:'for var in iterable:\n    # code',insert:'for ${1:i} in ${2:range(10)}:\n    ${3:pass}'},
-        {label:'while',kind:14,doc:'while condition:\n    # code',insert:'while ${1:condition}:\n    ${2:pass}'},
-        {label:'def',kind:14,doc:'def function_name(params):\n    # code',insert:'def ${1:func}(${2:}):\n    ${3:pass}'},
-        {label:'return',kind:14,insert:'return ${1:}'},
-        {label:'import',kind:14,insert:'import ${1:}'},
-        {label:'from',kind:14,insert:'from ${1:} import ${2:}'},
-        {label:'class',kind:14,insert:'class ${1:MyClass}:\n    def __init__(self):\n        ${2:pass}'},
-        {label:'try',kind:14,insert:'try:\n    ${1:pass}\nexcept ${2:Exception} as e:\n    ${3:pass}'},
-        {label:'with',kind:14,insert:'with ${1:} as ${2:f}:\n    ${3:pass}'},
-        {label:'lambda',kind:14,insert:'lambda ${1:x}: ${2:x}'},
-        {label:'True',kind:17,insert:'True'},
-        {label:'False',kind:17,insert:'False'},
-        {label:'None',kind:17,insert:'None'},
-        // math module
-        {label:'math.sqrt',kind:1,doc:'math.sqrt(x)\n\nรากที่สอง — ต้อง import math ก่อน',insert:'math.sqrt(${1:})'},
-        {label:'math.pi',kind:5,doc:'π ≈ 3.14159...',insert:'math.pi'},
-        {label:'math.floor',kind:1,doc:'math.floor(x)\n\nปัดเศษลง',insert:'math.floor(${1:})'},
-        {label:'math.ceil',kind:1,doc:'math.ceil(x)\n\nปัดเศษขึ้น',insert:'math.ceil(${1:})'},
-        {label:'math.pow',kind:1,doc:'math.pow(x, y)\n\nx ยกกำลัง y',insert:'math.pow(${1:}, ${2:})'},
-        {label:'math.log',kind:1,doc:'math.log(x[, base])\n\nlogarithm',insert:'math.log(${1:})'},
+      // Completions
+      const COMPLETIONS = [
+        { label:'print', insert:'print(${1:})', doc:'print(*objects)\nแสดงผลลัพธ์ออกทางหน้าจอ', kind:1 },
+        { label:'input', insert:'input(${1:})', doc:'input(prompt="")\nรับค่าจาก keyboard', kind:1 },
+        { label:'int', insert:'int(${1:})', doc:'int(x)\nแปลงเป็นจำนวนเต็ม', kind:1 },
+        { label:'float', insert:'float(${1:})', doc:'float(x)\nแปลงเป็นทศนิยม', kind:1 },
+        { label:'str', insert:'str(${1:})', doc:'str(x)\nแปลงเป็น string', kind:1 },
+        { label:'len', insert:'len(${1:})', doc:'len(s)\nนับจำนวน elements', kind:1 },
+        { label:'range', insert:'range(${1:})', doc:'range(stop) | range(start, stop, step)', kind:1 },
+        { label:'abs', insert:'abs(${1:})', doc:'abs(x)\nค่าสัมบูรณ์', kind:1 },
+        { label:'round', insert:'round(${1:})', doc:'round(number, ndigits)\nปัดเศษ', kind:1 },
+        { label:'max', insert:'max(${1:})', doc:'max(...)\nหาค่าสูงสุด', kind:1 },
+        { label:'min', insert:'min(${1:})', doc:'min(...)\nหาค่าต่ำสุด', kind:1 },
+        { label:'sum', insert:'sum(${1:})', doc:'sum(iterable)\nรวมค่าทั้งหมด', kind:1 },
+        { label:'type', insert:'type(${1:})', doc:'type(obj)\nดู type', kind:1 },
+        { label:'sorted', insert:'sorted(${1:})', doc:'sorted(iterable, reverse=False)', kind:1 },
+        { label:'enumerate', insert:'enumerate(${1:})', doc:'enumerate(iterable)\nวนพร้อม index', kind:1 },
+        { label:'if', insert:'if ${1:condition}:\n    ${2:pass}', doc:'เงื่อนไข if', kind:14 },
+        { label:'elif', insert:'elif ${1:condition}:\n    ${2:pass}', doc:'เงื่อนไข elif', kind:14 },
+        { label:'else', insert:'else:\n    ${1:pass}', doc:'เงื่อนไข else', kind:14 },
+        { label:'for', insert:'for ${1:i} in ${2:range(10)}:\n    ${3:pass}', doc:'วน for loop', kind:14 },
+        { label:'while', insert:'while ${1:condition}:\n    ${2:pass}', doc:'วน while loop', kind:14 },
+        { label:'def', insert:'def ${1:func}(${2:}):\n    ${3:pass}', doc:'สร้างฟังก์ชัน', kind:14 },
+        { label:'return', insert:'return ${1:}', doc:'คืนค่า', kind:14 },
+        { label:'import', insert:'import ${1:}', doc:'import module', kind:14 },
+        { label:'True', insert:'True', doc:'Boolean True', kind:17 },
+        { label:'False', insert:'False', doc:'Boolean False', kind:17 },
+        { label:'None', insert:'None', doc:'NoneType None', kind:17 },
       ];
 
       monaco.languages.registerCompletionItemProvider('python', {
-        triggerCharacters: ['.', '('],
         provideCompletionItems(model, position) {
           const word = model.getWordUntilPosition(position);
-          const range = {
-            startLineNumber: position.lineNumber,
-            endLineNumber:   position.lineNumber,
-            startColumn:     word.startColumn,
-            endColumn:       word.endColumn,
-          };
-          const suggestions = BUILTINS.map(b => ({
-            label:            b.label,
-            kind:             b.kind ?? monaco.languages.CompletionItemKind.Function,
-            documentation:    b.doc || b.label,
-            insertText:       b.insert || b.label,
-            insertTextRules:  monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-            range,
-          }));
-          return { suggestions };
-        }
-      });
-
-      monaco.languages.registerHoverProvider('python', {
-        provideHover(model, position) {
-          const word = model.getWordAtPosition(position);
-          if (!word) return;
-          const item = BUILTINS.find(b => b.label === word.word);
-          if (!item || !item.doc) return;
+          const range = { startLineNumber: position.lineNumber, endLineNumber: position.lineNumber, startColumn: word.startColumn, endColumn: word.endColumn };
           return {
-            contents: [
-              { value: `**${item.label}**` },
-              { value: '```\n' + item.doc + '\n```' }
-            ]
+            suggestions: COMPLETIONS.map(c => ({
+              label: c.label,
+              kind: c.kind,
+              documentation: { value: c.doc || '' },
+              insertText: c.insert,
+              insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+              range,
+            }))
           };
         }
       });
 
       const isDark = currentTheme === 'dark';
-      monacoEditor = monaco.editor.create(document.getElementById('editor-container'), {
+      editor = monaco.editor.create(document.getElementById('editorContainer'), {
         value: exercises.length > 0 ? exercises[0].starterCode : '# เขียนโค้ด Python ที่นี่\n',
         language: 'python',
-        theme: isDark ? 'pyAdventure' : 'pyAdventureLight',
-        fontSize: 14,
-        fontFamily: "'Fira Code', monospace",
+        theme: isDark ? 'paDark' : 'paLight',
+        fontSize: 13.5,
+        fontFamily: "'Noto Sans Thai', sans-serif",
         fontLigatures: true,
         minimap: { enabled: false },
         scrollBeyondLastLine: false,
         lineNumbers: 'on',
         automaticLayout: true,
         tabSize: 4,
+        insertSpaces: true,
         wordWrap: 'on',
         padding: { top: 14, bottom: 14 },
         quickSuggestions: { other: true, comments: false, strings: false },
         suggestOnTriggerCharacters: true,
         acceptSuggestionOnEnter: 'on',
         snippetSuggestions: 'top',
-        parameterHints: { enabled: true },
-        hover: { enabled: true },
+        autoClosingBrackets: 'always',
+        autoClosingQuotes: 'always',
+        matchBrackets: 'always',
+        renderLineHighlight: 'line',
+        cursorBlinking: 'phase',
+        cursorSmoothCaretAnimation: 'on',
+        smoothScrolling: true,
       });
+
+      // Keyboard shortcut: Ctrl+Enter = Run
+      editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
+        if (!document.getElementById('runBtn').disabled) runCode();
+      });
+
+      window.editor = editor;
       resolve();
     });
   });
 }
 
-// ── SIDEBAR ────────────────────────────────────────────────
-const collapsedChapters = new Set(); // track which chapter indices are collapsed
+/* ══════════════════════════════════════════
+   SIDEBAR
+══════════════════════════════════════════ */
+const collapsedChaps = new Set();
 
 function buildSidebar() {
-  const sb = document.getElementById('sidebar');
+  const inner = document.getElementById('sidebarInner');
+  inner.innerHTML = '';
+  let chapIdx = 0;
   let currentGroup = null;
-  let chapterIdx = 0;
 
   exercises.forEach((ex, i) => {
     if (ex.chapter) {
-      // New chapter group
-      chapterIdx++;
-      const idx = chapterIdx;
-      const group = document.createElement('div');
-      group.className = 'chapter-group';
-      group.id = `chap-group-${idx}`;
-      if (collapsedChapters.has(idx)) group.classList.add('collapsed');
+      chapIdx++;
+      const idx = chapIdx;
+      const grp = document.createElement('div');
+      grp.className = 'chapter-group' + (collapsedChaps.has(idx) ? ' collapsed' : '');
+      grp.id = 'cg-' + idx;
 
-      const toggle = document.createElement('button');
-      toggle.className = 'chapter-toggle';
-      toggle.innerHTML = `
-        <span style="flex:1;text-align:left">${ex.chapter}</span>
-        <div class="chapter-toggle-line"></div>
-        <span class="chapter-caret">▾</span>`;
-      toggle.onclick = () => {
-        const collapsed = group.classList.toggle('collapsed');
-        if (collapsed) collapsedChapters.add(idx);
-        else collapsedChapters.delete(idx);
+      const hdr = document.createElement('div');
+      hdr.className = 'chapter-header';
+      hdr.innerHTML = `<span style="flex:1;text-align:left">${ex.chapter}</span><div class="chapter-line"></div><span class="chapter-caret">▾</span>`;
+      hdr.onclick = () => {
+        const c = grp.classList.toggle('collapsed');
+        if (c) collapsedChaps.add(idx); else collapsedChaps.delete(idx);
       };
-      group.appendChild(toggle);
 
       const items = document.createElement('div');
       items.className = 'chapter-items';
-      group.appendChild(items);
-
-      sb.appendChild(group);
+      grp.appendChild(hdr);
+      grp.appendChild(items);
+      inner.appendChild(grp);
       currentGroup = items;
     }
 
     const btn = document.createElement('button');
-    btn.className = 'exercise-btn' + (i === currentIdx ? ' active' : '') + (completed.has(i) ? ' completed' : '');
-    btn.id = 'ex-btn-' + i;
-    btn.innerHTML = `<div class="ex-num">${ex.id}</div><span style="flex:1">${ex.title.replace(`ข้อ ${ex.id} — `, '')}</span>`;
+    btn.className = 'ex-btn' + (i === currentIdx ? ' active' : '') + (completed.has(i) ? ' done' : '');
+    btn.id = 'eb-' + i;
+    const shortTitle = ex.title.replace(new RegExp(`^ข้อ\\s*${ex.id}\\s*[—–-]\\s*`), '');
+    btn.innerHTML = `<div class="ex-num">${ex.id}</div><span class="ex-title">${shortTitle}</span><span class="ex-check">✓</span>`;
     btn.onclick = () => selectExercise(i);
-    (currentGroup || sb).appendChild(btn);
+    (currentGroup || inner).appendChild(btn);
   });
+
+  updateStatCards();
 }
 
 function updateSidebar() {
   exercises.forEach((_, i) => {
-    const b = document.getElementById('ex-btn-' + i);
-    if (b) b.className = 'exercise-btn' + (i===currentIdx?' active':'') + (completed.has(i)?' completed':'');
+    const b = document.getElementById('eb-' + i);
+    if (b) b.className = 'ex-btn' + (i === currentIdx ? ' active' : '') + (completed.has(i) ? ' done' : '');
   });
+  updateStatCards();
 }
 
-// ── EXERCISE SELECT ────────────────────────────────────────
+function updateStatCards() {
+  document.getElementById('statDone').textContent = completed.size;
+  document.getElementById('statTotal').textContent = exercises.length;
+  document.getElementById('scoreTotal').textContent = exercises.length;
+}
+
+/* ══════════════════════════════════════════
+   EXERCISE SELECTION
+══════════════════════════════════════════ */
 function selectExercise(idx) {
   currentIdx = idx;
   const ex = exercises[idx];
-  document.getElementById('problemBadge').textContent = ex.badge;
-  document.getElementById('problemBadge').className = 'problem-badge ' + ex.badgeClass;
-  document.getElementById('problemTitle').textContent = ex.title;
-  document.getElementById('problemDesc').innerHTML = ex.desc;
-  document.getElementById('hintText').textContent = ex.hint;
-  document.getElementById('hintBox').style.display = 'none';
-  document.getElementById('hintToggle').textContent = '💡 แสดง hint';
-  if (monacoEditor) monacoEditor.setValue(ex.starterCode);
+  document.getElementById('probBadge').textContent = ex.badge || '';
+  document.getElementById('probBadge').className = 'prob-badge ' + (ex.badgeClass || '');
+  document.getElementById('probTitle').textContent = ex.title;
+  document.getElementById('probDesc').innerHTML = ex.desc;
+  document.getElementById('hintTxt').textContent = ex.hint || '';
+  // Reset hint
+  document.getElementById('hintBox').classList.remove('show');
+  document.getElementById('hintBtn').textContent = '💡 ดู hint';
+  // Reset state
+  if (editor) editor.setValue(ex.starterCode || '');
   clearOutput();
   hideResult();
   document.getElementById('nextBtn').style.display = 'none';
@@ -811,294 +1227,199 @@ function selectExercise(idx) {
   updateProgress();
 }
 
-// ── OUTPUT UTILS ───────────────────────────────────────────
-function addLine(text, cls) {
-  const el = document.getElementById('outputContent');
+/* ══════════════════════════════════════════
+   OUTPUT
+══════════════════════════════════════════ */
+function addLine(txt, cls) {
+  const oc = document.getElementById('outputContent');
   const d = document.createElement('div');
-  d.className = 'out-line' + (cls ? ' ' + cls : '');
-  d.textContent = text;
-  el.appendChild(d);
-  el.scrollTop = el.scrollHeight;
+  d.className = 'ol' + (cls ? ' ' + cls : '');
+  d.textContent = txt;
+  oc.appendChild(d);
+  oc.scrollTop = oc.scrollHeight;
 }
 
 function clearOutput() {
-  document.getElementById('outputContent').innerHTML =
-    '<div class="out-line out-sys">// ผลลัพธ์ของโปรแกรมจะแสดงที่นี่ 🎯</div>';
+  document.getElementById('outputContent').innerHTML = '<div class="ol ol-sys">// ผลลัพธ์จะแสดงที่นี่ 🎯</div>';
 }
 
-// ── MANUAL INPUT (when no queue) ───────────────────────────
-function setupInputHandling() {
-  const f = document.getElementById('inputField');
-  f.addEventListener('keydown', e => {
-    if (e.key === 'Enter' && inputCallback) {
-      const val = f.value;
-      f.value = '';
-      document.getElementById('inputContainer').classList.remove('active');
-      const cb = inputCallback;
-      inputCallback = null;
-      cb(val);
-    }
-  });
+function renderOutput(raw, autoInputs) {
+  if (raw.startsWith('__ERR__')) {
+    const msg = raw.replace('__ERR__', '');
+    const lines = msg.trim().split('\n');
+    const errLine = lines.filter(l => /Error/.test(l)).pop() || lines[lines.length - 1];
+    addLine('⚠️ ' + errLine.trim(), 'ol-err');
+    // Show full traceback in smaller text
+    lines.forEach(l => { if (l.trim()) addLine('  ' + l, 'ol-err'); });
+    return;
+  }
+  if (autoInputs && autoInputs.length > 0) {
+    autoInputs.forEach(v => addLine('→ ' + v, 'ol-inp'));
+  }
+  const lines = raw.split('\n');
+  if (lines.length && lines[lines.length - 1] === '') lines.pop();
+  if (!lines.length) addLine('(ไม่มี output)', 'ol-sys');
+  else lines.forEach(l => addLine(l, ''));
 }
 
-function waitForInput() {
-  return new Promise(resolve => {
-    inputCallback = resolve;
-    document.getElementById('inputContainer').classList.add('active');
-    document.getElementById('inputField').focus();
-  });
-}
-
-// ── CORE EXECUTION ENGINE ──────────────────────────────────
-// Approach: pre-fill a Python-side list with the input values.
-// Python's input() is replaced with a function that pops from that list.
-// stdout is captured via io.StringIO.
-// The whole thing runs synchronously (no async complications).
-
-async function executePython(userCode, autoInputs) {
-  // Store user code and inputs in pyodide globals to avoid escaping issues
-  pyodide.globals.set('_user_code', userCode);
-
-  // Build input list as Python list literal
-  const pyInputList = '[' + autoInputs.map(v => JSON.stringify(String(v))).join(',') + ']';
-
-  // If no auto inputs and code uses input(), we need interactive mode
-  // For now, for auto-graded exercises all inputs are pre-supplied
-  const pyScript = `
+/* ══════════════════════════════════════════
+   PYTHON EXECUTION
+══════════════════════════════════════════ */
+async function executePython(code, inputs) {
+  pyodide.globals.set('_user_code', code);
+  const pyInputList = '[' + (inputs || []).map(v => JSON.stringify(String(v))).join(',') + ']';
+  const script = `
 import sys, io, builtins, traceback
-
-# ── capture stdout ──
-_out_buf = io.StringIO()
-_old_stdout = sys.stdout
-sys.stdout = _out_buf
-
-# ── patch input() ──
-_input_vals = ${pyInputList}
-_input_idx = [0]
-
-def _fake_input(prompt=''):
-    if prompt:
-        print(prompt, end='')
-    if _input_idx[0] < len(_input_vals):
-        val = _input_vals[_input_idx[0]]
-        _input_idx[0] += 1
-        return val
+_buf = io.StringIO()
+_old = sys.stdout
+sys.stdout = _buf
+_vals = ${pyInputList}
+_idx = [0]
+def _inp(prompt=''):
+    if prompt: print(prompt, end='')
+    if _idx[0] < len(_vals):
+        v = _vals[_idx[0]]; _idx[0] += 1; return v
     return ''
-
-builtins.input = _fake_input
-
-# ── run user code ──
+builtins.input = _inp
 _err = None
 try:
     exec(compile(_user_code, '<student>', 'exec'))
-except SystemExit:
-    pass
-except Exception:
-    _err = traceback.format_exc()
-
-# ── restore ──
-sys.stdout = _old_stdout
-builtins.input = input.__class__  # doesn't matter, we'll reset on next run
-
-# ── return result ──
-_result = _out_buf.getvalue()
-if _err:
-    _result = '__ERR__' + _err
-_result
+except SystemExit: pass
+except Exception: _err = traceback.format_exc()
+sys.stdout = _old
+_res = _buf.getvalue()
+if _err: _res = '__ERR__' + _err
+_res
 `;
-
-  const result = await pyodide.runPythonAsync(pyScript);
+  const result = await pyodide.runPythonAsync(script);
   return String(result || '');
 }
 
-// ── RUN (display only) ─────────────────────────────────────
+/* ══════════════════════════════════════════
+   RUN
+══════════════════════════════════════════ */
 async function runCode() {
   if (!pyodideReady) return;
   const ex = exercises[currentIdx];
-  const code = monacoEditor.getValue();
+  if (!ex) return;
   clearOutput();
   hideResult();
   document.getElementById('nextBtn').style.display = 'none';
-  setRunning(true);
-
+  setBusy(true);
   try {
-    const raw = await executePython(code, ex.inputs || []);
+    const raw = await executePython(editor.getValue(), ex.inputs || []);
     renderOutput(raw, ex.inputs || []);
   } catch(e) {
-    addLine('⚠️ JS Error: ' + (e.message||e), 'out-err');
+    addLine('⚠️ JS Error: ' + e.message, 'ol-err');
   } finally {
-    setRunning(false);
+    setBusy(false);
   }
 }
 
-// ── CHECK ANSWER (Multi Test Cases) ───────────────────────
+/* ══════════════════════════════════════════
+   CHECK
+══════════════════════════════════════════ */
 async function checkAnswer() {
   if (!pyodideReady) return;
   const ex = exercises[currentIdx];
-  const code = monacoEditor.getValue();
+  if (!ex) return;
   clearOutput();
   hideResult();
-  setRunning(true);
+  setBusy(true);
 
-  // Build test cases array: support new testCases field or fall back to single case
-  const testCases = ex.testCases && ex.testCases.length > 0
+  const testCases = (ex.testCases && ex.testCases.length)
     ? ex.testCases
     : [{ inputs: ex.inputs || [], expected: ex.expected }];
 
-  const normalize = s => s.split('\n').map(l => l.trimEnd()).join('\n').trim();
-
+  const norm = s => s.split('\n').map(l => l.trimEnd()).join('\n').trim();
+  const results = [];
   let allPassed = true;
   let firstError = null;
-  const results = [];
 
   for (let i = 0; i < testCases.length; i++) {
     const tc = testCases[i];
     let raw = '';
-    try {
-      raw = await executePython(code, tc.inputs || []);
-    } catch(e) {
-      raw = '__ERR__' + (e.message || e);
-    }
-
+    try { raw = await executePython(editor.getValue(), tc.inputs || []); }
+    catch(e) { raw = '__ERR__' + e.message; }
     if (raw.startsWith('__ERR__')) {
       allPassed = false;
       if (!firstError) firstError = raw;
       results.push({ passed: false, inputs: tc.inputs, expected: tc.expected, got: null, error: true });
-      break; // stop on runtime error
+      break;
     }
-
-    const got = normalize(raw);
-    const want = normalize(tc.expected);
+    const got = norm(raw), want = norm(tc.expected);
     const passed = got === want;
     if (!passed) allPassed = false;
     results.push({ passed, inputs: tc.inputs, expected: tc.expected, got });
   }
 
-  setRunning(false);
+  setBusy(false);
 
-  // Show output for last run (or first error)
-  if (firstError) {
-    renderOutput(firstError, []);
-  } else {
-    const lastTc = testCases[results.length - 1];
-    renderOutput(
-      // re-use last raw: rebuild from got
-      results[results.length-1].got !== null
-        ? results[results.length-1].got + '\n'
-        : '',
-      lastTc.inputs || []
-    );
+  if (firstError) renderOutput(firstError, []);
+  else {
+    const last = results[results.length - 1];
+    renderOutput(last.got !== null ? last.got + '\n' : '', (testCases[results.length - 1].inputs || []));
   }
 
   if (allPassed && !completed.has(currentIdx)) {
     completed.add(currentIdx);
     score++;
-    document.getElementById('scoreDisplay').textContent = score;
-    showStarBurst();
+    document.getElementById('scoreNum').textContent = score;
+    showConfetti();
   }
 
   showResultMulti(allPassed, results, testCases.length);
-  if (allPassed) document.getElementById('nextBtn').style.display =
-    currentIdx < exercises.length - 1 ? 'flex' : 'none';
-  updateSidebar(); updateProgress();
+  if (allPassed && currentIdx < exercises.length - 1) {
+    document.getElementById('nextBtn').style.display = 'inline-flex';
+  }
+  updateSidebar();
+  updateProgress();
 }
 
-// ── RENDER OUTPUT ──────────────────────────────────────────
-function renderOutput(raw, autoInputs) {
-  if (raw.startsWith('__ERR__')) {
-    const msg = raw.replace('__ERR__', '');
-    // Show the most relevant error line
-    const lines = msg.trim().split('\n');
-    const errLine = lines.filter(l => /Error/.test(l)).pop() || lines[lines.length-1];
-    addLine('⚠️ ' + errLine.trim(), 'out-err');
-    return;
-  }
-
-  // Show auto-inputs as info lines first
-  if (autoInputs.length > 0) {
-    autoInputs.forEach(v => addLine('→ input: ' + v, 'out-inp'));
-  }
-
-  const lines = raw.split('\n');
-  // Remove trailing empty line that print() adds
-  if (lines.length > 0 && lines[lines.length-1] === '') lines.pop();
-  if (lines.length === 0) {
-    addLine('(ไม่มี output)', 'out-sys');
-  } else {
-    lines.forEach(l => addLine(l, ''));
-  }
-}
-
-// ── RESULT DISPLAY ─────────────────────────────────────────
-function showResult(ok, expected, got) {
-  const panel = document.getElementById('resultPanel');
+/* ══════════════════════════════════════════
+   RESULT DISPLAY
+══════════════════════════════════════════ */
+function showResultMulti(allPassed, results, total) {
   const inner = document.getElementById('resultInner');
-  if (ok) {
-    inner.innerHTML = `<div class="result-correct">
+  const passed = results.filter(r => r.passed).length;
+
+  if (allPassed) {
+    inner.innerHTML = `<div class="result-pass">
       <div class="result-icon">🎉</div>
       <div>
-        <div class="result-msg" style="color:var(--green)">ถูกต้อง! ยอดเยี่ยมมาก! 🌟</div>
-        <div class="result-sub">Output: "${expected.replace(/\n/g,' | ')}"</div>
-      </div></div>`;
+        <div class="result-title" style="color:var(--neon)">ถูกต้องทั้งหมด! ผ่าน ${passed}/${total} test ✨</div>
+        <div class="result-sub">${results[0].expected.replace(/\n/g,'↵').slice(0,80)}</div>
+      </div>
+    </div>`;
   } else {
-    inner.innerHTML = `<div class="result-wrong">
-      <div class="result-icon">🤔</div>
-      <div>
-        <div class="result-msg" style="color:var(--red)">ยังไม่ถูก ลองใหม่นะ!</div>
-        <div class="result-sub">คาดหวัง: "${expected.replace(/\n/g,' | ')}"  |  ได้: "${String(got||'').replace(/\n/g,' | ').substring(0,60)}"</div>
-      </div></div>`;
+    const rows = results.map((r, i) => {
+      if (r.error) return `<div class="tc-row"><span class="tc-fail">✗</span><span class="tc-label">Test ${i+1}</span><span class="tc-code tc-got">Runtime Error</span></div>`;
+      const inStr = (r.inputs||[]).length ? `[${r.inputs.join(', ')}]` : '';
+      return `<div class="tc-row">
+        <span class="${r.passed?'tc-pass':'tc-fail'}">${r.passed?'✓':'✗'}</span>
+        <span class="tc-label">Test ${i+1}${inStr?' '+inStr:''}</span>
+        ${!r.passed ? `<span class="tc-code tc-exp">${(r.expected||'').replace(/\n/g,'↵').slice(0,35)}</span><span style="color:var(--text3)">≠</span><span class="tc-code tc-got">${(r.got||'').replace(/\n/g,'↵').slice(0,35)}</span>` : ''}
+      </div>`;
+    }).join('');
+    inner.innerHTML = `<div class="result-fail">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="result-icon">🤔</div>
+        <div class="result-title" style="color:var(--rose)">ผ่าน ${passed}/${total} test — ลองแก้ใหม่นะ!</div>
+      </div>
+      <div>${rows}</div>
+    </div>`;
   }
-  panel.classList.add('show');
+  document.getElementById('resultPanel').classList.add('show');
 }
 
 function hideResult() {
   document.getElementById('resultPanel').classList.remove('show');
 }
 
-function showResultMulti(allPassed, results, total) {
-  const panel = document.getElementById('resultPanel');
-  const inner = document.getElementById('resultInner');
-  const passed = results.filter(r => r.passed).length;
-
-  if (allPassed) {
-    inner.innerHTML = `<div class="result-correct">
-      <div class="result-icon">🎉</div>
-      <div>
-        <div class="result-msg" style="color:var(--green)">ถูกต้องทุก test case! (${passed}/${total}) 🌟</div>
-        <div class="result-sub">ผ่านทุก test case เยี่ยมมาก!</div>
-      </div></div>`;
-  } else {
-    // Show per-test-case breakdown
-    const rows = results.map((r, i) => {
-      if (r.error) {
-        return `<div style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:0.78rem">
-          <span style="color:var(--red)">✗</span>
-          <span style="color:var(--text2)">Test ${i+1}</span>
-          <span style="color:var(--red)">Runtime Error</span>
-        </div>`;
-      }
-      const inputStr = (r.inputs||[]).length ? ` [input: ${r.inputs.join(', ')}]` : '';
-      return `<div style="display:flex;align-items:center;gap:8px;padding:3px 0;font-size:0.78rem;flex-wrap:wrap">
-        <span style="color:${r.passed?'var(--green)':'var(--red)'}">${r.passed?'✓':'✗'}</span>
-        <span style="color:var(--text2)">Test ${i+1}${inputStr}</span>
-        ${!r.passed ? `<span style="color:var(--text2)">คาดหวัง: <code style="color:var(--accent3)">${(r.expected||'').replace(/\n/g,' | ').substring(0,40)}</code> ได้: <code style="color:var(--red)">${(r.got||'').replace(/\n/g,' | ').substring(0,40)}</code></span>` : ''}
-      </div>`;
-    }).join('');
-    inner.innerHTML = `<div class="result-wrong" style="flex-direction:column;align-items:flex-start;gap:8px">
-      <div style="display:flex;align-items:center;gap:12px">
-        <div class="result-icon">🤔</div>
-        <div>
-          <div class="result-msg" style="color:var(--red)">ผ่าน ${passed}/${total} test case — ลองแก้ใหม่นะ!</div>
-        </div>
-      </div>
-      <div style="padding-left:4px;width:100%">${rows}</div>
-    </div>`;
-  }
-  panel.classList.add('show');
-}
-
-// ── HELPERS ────────────────────────────────────────────────
-function setRunning(on) {
+/* ══════════════════════════════════════════
+   HELPERS
+══════════════════════════════════════════ */
+function setBusy(on) {
   document.getElementById('runBtn').disabled = on;
   document.getElementById('checkBtn').disabled = on;
   document.getElementById('runSpinner').style.display = on ? 'inline' : 'none';
@@ -1106,10 +1427,10 @@ function setRunning(on) {
 
 function toggleHint() {
   const box = document.getElementById('hintBox');
-  const btn = document.getElementById('hintToggle');
-  const show = box.style.display === 'none';
-  box.style.display = show ? 'flex' : 'none';
-  btn.textContent = show ? '🙈 ซ่อน hint' : '💡 แสดง hint';
+  const btn = document.getElementById('hintBtn');
+  const show = !box.classList.contains('show');
+  box.classList.toggle('show', show);
+  btn.textContent = show ? '🙈 ซ่อน hint' : '💡 ดู hint';
 }
 
 function nextExercise() {
@@ -1117,375 +1438,265 @@ function nextExercise() {
 }
 
 function updateProgress() {
-  document.getElementById('progressFill').style.width =
-    (completed.size / exercises.length * 100) + '%';
+  const pct = exercises.length > 0 ? (completed.size / exercises.length * 100) : 0;
+  document.getElementById('progressFill').style.width = pct + '%';
 }
 
-function showStarBurst() {
-  const stars = ['⭐','🌟','✨','🎉','🎊','💫'];
-  for (let i = 0; i < 6; i++) {
+function showConfetti() {
+  const emojis = ['🎉','⭐','✨','🌟','💫','🎊','🎈','🏆'];
+  for (let i = 0; i < 8; i++) {
     setTimeout(() => {
       const el = document.createElement('div');
-      el.className = 'star-burst';
-      el.textContent = stars[Math.floor(Math.random()*stars.length)];
-      el.style.left = (15 + Math.random()*70)+'vw';
-      el.style.top = (15 + Math.random()*70)+'vh';
+      el.className = 'confetti';
+      el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+      el.style.left = (10 + Math.random() * 80) + 'vw';
+      el.style.top = (10 + Math.random() * 80) + 'vh';
+      el.style.animationDuration = (0.8 + Math.random() * 0.6) + 's';
       document.body.appendChild(el);
-      setTimeout(() => el.remove(), 1000);
-    }, i * 100);
+      setTimeout(() => el.remove(), 1400);
+    }, i * 90);
   }
 }
 
-// ── THEME ──────────────────────────────────────────────────
-let currentTheme = 'dark';
-
+/* ══════════════════════════════════════════
+   THEME
+══════════════════════════════════════════ */
+function applyTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  const isLight = t === 'light';
+  document.getElementById('themeTxt').textContent = isLight ? 'Dark' : 'Light';
+  if (editor) monaco.editor.setTheme(isLight ? 'paLight' : 'paDark');
+}
 function toggleTheme() {
   currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
   applyTheme(currentTheme);
-  localStorage.setItem('py-adv-theme', currentTheme);
+  localStorage.setItem('pa-theme', currentTheme);
 }
 
-function applyTheme(theme) {
-  const root = document.documentElement;
-  if (theme === 'light') {
-    root.setAttribute('data-theme', 'light');
-    document.getElementById('themeIcon').innerHTML = `
-      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>`;
-    document.getElementById('themeTxt').textContent = 'Dark';
-    if (monacoEditor) monaco.editor.setTheme('pyAdventureLight');
-  } else {
-    root.removeAttribute('data-theme');
-    document.getElementById('themeIcon').innerHTML = `
-      <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/>
-      <line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
-      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/>
-      <line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
-      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>`;
-    document.getElementById('themeTxt').textContent = 'Light';
-    if (monacoEditor) monaco.editor.setTheme('pyAdventure');
-  }
+/* ══════════════════════════════════════════
+   TOAST
+══════════════════════════════════════════ */
+let _tid = 0;
+function toast(msg, type = 'info', dur = 4000) {
+  const c = document.getElementById('toastContainer');
+  const id = ++_tid;
+  const el = document.createElement('div');
+  el.id = 'toast-' + id;
+  el.className = 'toast toast-' + type;
+  el.innerHTML = `<span class="toast-msg">${msg}</span><button class="toast-x" onclick="dismissToast(${id})">✕</button>`;
+  c.appendChild(el);
+  requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('in')));
+  el._t = setTimeout(() => dismissToast(id), dur);
+  return id;
+}
+function dismissToast(id) {
+  const el = document.getElementById('toast-' + id);
+  if (!el) return;
+  clearTimeout(el._t);
+  el.classList.remove('in'); el.classList.add('out');
+  setTimeout(() => el.remove(), 250);
 }
 
+/* ══════════════════════════════════════════
+   JSON / EXERCISE LOADING
+══════════════════════════════════════════ */
 const DEFAULT_JSON_URL = 'https://raw.githubusercontent.com/Karibura-Cyber/python-playground/refs/heads/main/exercises.json';
+const MXR_MAGIC = 'PYADVMXR1';
 
-function validateExercise(ex) {
-  const required = ['id','title','badge','badgeClass','desc','hint','starterCode','expected'];
-  for (const f of required) {
-    if (ex[f] === undefined || ex[f] === null) return `ขาด field: "${f}"`;
-  }
-  if (typeof ex.id !== 'number') return `"id" ต้องเป็นตัวเลข`;
+function validateEx(ex) {
+  const req = ['id','title','badge','badgeClass','desc','hint','starterCode','expected'];
+  for (const f of req) if (ex[f] == null) return `ขาด "${f}"`;
   if (!Array.isArray(ex.inputs)) ex.inputs = [];
-  if (!ex.type) ex.type = 'custom';
-  if (ex.chapter === undefined) ex.chapter = null;
+  if (!ex.chapter) ex.chapter = null;
   return null;
 }
 
-function mergeExercises(newExs) {
-  const existingIds = new Set(exercises.map(e => e.id));
+function mergeExercises(arr) {
+  const ids = new Set(exercises.map(e => e.id));
   let added = 0, skipped = 0, errors = [];
-  newExs.forEach((ex, i) => {
-    const err = validateExercise(ex);
+  arr.forEach((ex, i) => {
+    const err = validateEx(ex);
     if (err) { errors.push(`ข้อ ${i+1}: ${err}`); return; }
-    if (existingIds.has(ex.id)) { skipped++; return; }
-    exercises.push(ex);
-    existingIds.add(ex.id);
-    added++;
+    if (ids.has(ex.id)) { skipped++; return; }
+    exercises.push(ex); ids.add(ex.id); added++;
   });
   return { added, skipped, errors };
 }
 
-function rebuildAfterMerge() {
-  document.getElementById('sidebar').innerHTML = '';
+function rebuildUI() {
   buildSidebar();
-  document.getElementById('totalDisplay').textContent = exercises.length;
-  // If no exercise is selected yet (idx 0 might not exist), select first
-  if (exercises.length > 0 && document.getElementById('problemTitle').textContent === '') {
+  document.getElementById('scoreTotal').textContent = exercises.length;
+  document.getElementById('statTotal').textContent = exercises.length;
+  if (exercises.length > 0 && !document.getElementById('probTitle').textContent.includes(' ')) {
     selectExercise(0);
   }
   updateProgress();
 }
 
-// ── TOAST SYSTEM ───────────────────────────────────────────
-let _toastId = 0;
-
-function showToast(msg, type = 'info', duration = 4000) {
-  // type: 'ok' | 'err' | 'info'
-  const container = document.getElementById('toast-container');
-  const id = ++_toastId;
-
-  const icons = { ok: '✓', err: '✕', info: 'ℹ' };
-
-  const el = document.createElement('div');
-  el.className = `toast toast-${type}`;
-  el.id = `toast-${id}`;
-  el.innerHTML = `
-    <span class="toast-icon">${icons[type] || icons.info}</span>
-    <span class="toast-msg">${msg}</span>
-    <button class="toast-close" onclick="dismissToast(${id})">✕</button>`;
-
-  container.appendChild(el);
-
-  // Trigger enter animation
-  requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('show')));
-
-  // Auto dismiss
-  const timer = setTimeout(() => dismissToast(id), duration);
-  el._timer = timer;
-
-  return id;
-}
-
-function dismissToast(id) {
-  const el = document.getElementById(`toast-${id}`);
-  if (!el) return;
-  clearTimeout(el._timer);
-  el.classList.remove('show');
-  el.classList.add('hide');
-  setTimeout(() => el.remove(), 280);
-}
-
-// Legacy alias used by save/load functions
-function showJsonStatus(msg, isOk) {
-  showToast(msg, isOk ? 'ok' : 'err');
-}
-
 async function loadDefaultJson() {
-  const btn = document.getElementById('reloadJsonBtn');
-  if (btn) { btn.textContent = '⏳ กำลังโหลด...'; btn.disabled = true; }
+  const btn = document.getElementById('reloadBtn');
+  btn.disabled = true; btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="animation:spin 0.8s linear infinite"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.12"/></svg> กำลังโหลด...';
+
   try {
     const res = await fetch(DEFAULT_JSON_URL);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
-    if (!Array.isArray(data)) throw new Error('JSON ต้องเป็น array');
+    if (!Array.isArray(data)) throw new Error('ต้องเป็น array');
 
-    // Validate each exercise
-    const errors = [];
-    const valid = [];
+    const valid = [], errors = [];
     data.forEach((ex, i) => {
-      const err = validateExercise(ex);
-      if (err) { errors.push(`ข้อ ${i+1}: ${err}`); return; }
-      valid.push(ex);
+      const err = validateEx(ex);
+      if (err) errors.push(`ข้อ ${i+1}: ${err}`);
+      else valid.push(ex);
     });
 
-    // Replace exercises with data from JSON (keep any extra loaded from file)
-    // Filter out exercises whose id exists in the new JSON, then push new ones
     const newIds = new Set(valid.map(e => e.id));
-    exercises = exercises.filter(e => !newIds.has(e.id)); // remove old versions
+    exercises = exercises.filter(e => !newIds.has(e.id));
     exercises.push(...valid);
-    // Sort by id
     exercises.sort((a, b) => a.id - b.id);
+    rebuildUI();
+    if (exercises.length) selectExercise(0);
 
-    rebuildAfterMerge();
-
-    if (errors.length > 0) {
-      showToast(`โหลดแล้ว ${valid.length} ข้อ — ⚠️ ${errors.length} error`, 'err');
-    }
-    return valid.length;
+    toast(`โหลด ${valid.length} โจทย์สำเร็จ${errors.length ? ` (${errors.length} error)` : ''}`, errors.length ? 'err' : 'ok');
   } catch(e) {
-    showToast('❌ โหลดโจทย์ไม่ได้: ' + e.message, 'err');
-    return 0;
+    toast('โหลดไม่ได้: ' + e.message, 'err');
   } finally {
-    // if (btn) { btn.textContent = '🔄 โหลดโจทย์'; btn.disabled = false; }
-    if (btn) { btn.innerHTML = '<i class="fa-solid fa-arrows-rotate"></i> โหลดโจทย์'; btn.disabled = false; }
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.12"/></svg> โหลดโจทย์';
   }
 }
 
-function loadFromFile(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  event.target.value = '';
+function handleJsonFile(e) {
+  const file = e.target.files[0]; if (!file) return;
+  e.target.value = '';
   const reader = new FileReader();
-  reader.onload = (e) => {
+  reader.onload = ev => {
     try {
-      const data = JSON.parse(e.target.result);
-      if (!Array.isArray(data)) throw new Error('JSON ต้องเป็น array');
+      const data = JSON.parse(ev.target.result);
+      if (!Array.isArray(data)) throw new Error('ต้องเป็น array');
       const { added, skipped, errors } = mergeExercises(data);
-      rebuildAfterMerge();
-      let msg = `"${file.name}": +${added} ข้อ`;
-      if (skipped > 0) msg += ` (ซ้ำ ${skipped})`;
-      showToast(msg, errors.length === 0 ? 'ok' : 'err');
-    } catch(e) {
-      showToast('❌ ' + e.message, 'err');
-    }
+      rebuildUI();
+      toast(`"${file.name}": +${added}${skipped ? ` ซ้ำ ${skipped}` : ''}`, errors.length ? 'err' : 'ok');
+    } catch(err) { toast('❌ ' + err.message, 'err'); }
   };
-  reader.onerror = () => showToast('❌ อ่านไฟล์ไม่ได้', 'err');
   reader.readAsText(file, 'UTF-8');
 }
 
-// ── SAVE / LOAD PROGRESS (.mxr) ────────────────────────────
-// .mxr format: base64-encoded JSON with a magic header
-
-const MXR_MAGIC = 'PYADVMXR1';
-
-function collectCurrentCode() {
-  // Save current editor code for the active exercise
-  return monacoEditor ? monacoEditor.getValue() : '';
+/* ══════════════════════════════════════════
+   SAVE / LOAD PROGRESS
+══════════════════════════════════════════ */
+function openSaveModal() {
+  document.getElementById('saveModal').classList.add('show');
+  setTimeout(() => document.getElementById('saveNameIn').focus(), 50);
 }
-
-function saveProgress() {
-  document.getElementById('saveModal').style.display = 'flex';
-  setTimeout(() => document.getElementById('saveNameInput').focus(), 50);
-}
-
 function closeSaveModal() {
-  document.getElementById('saveModal').style.display = 'none';
+  document.getElementById('saveModal').classList.remove('show');
 }
-
 function confirmSave() {
-  const studentName = document.getElementById('saveNameInput').value.trim() || 'ไม่ระบุชื่อ';
+  const name = document.getElementById('saveNameIn').value.trim() || 'ไม่ระบุ';
   closeSaveModal();
-
-  // Build snapshot
-  const snapshot = {
-    magic: MXR_MAGIC,
-    version: 1,
+  const snap = {
+    magic: MXR_MAGIC, version: 1,
     savedAt: new Date().toISOString(),
-    studentName,
-    score,
-    currentIdx,
-    completed: [...completed],         // array of completed exercise indices
-    // Save code per exercise id: { [id]: code }
-    codes: {},
+    studentName: name, score, currentIdx,
+    completed: [...completed],
+    codes: {}
   };
-
-  // Save current editor content for current exercise
-  if (monacoEditor) {
-    snapshot.codes[exercises[currentIdx].id] = monacoEditor.getValue();
-  }
-
-  // Encode to base64
-  const json = JSON.stringify(snapshot);
-  const b64 = btoa(unescape(encodeURIComponent(json)));
+  if (editor && exercises[currentIdx]) snap.codes[exercises[currentIdx].id] = editor.getValue();
+  const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(snap))));
   const blob = new Blob([b64], { type: 'application/octet-stream' });
   const url = URL.createObjectURL(blob);
-
-  // Generate filename: progress_NAME_DATE.mxr
-  const dateStr = new Date().toISOString().slice(0,10);
-  const safeName = studentName.replace(/[^a-zA-Z0-9ก-๙]/g, '_').substring(0,20);
-  const filename = `progress_${safeName}_${dateStr}.mxr`;
-
   const a = document.createElement('a');
   a.href = url;
-  a.download = filename;
+  a.download = `progress_${name.replace(/[^a-zA-Z0-9ก-๙]/g,'_').slice(0,20)}_${new Date().toISOString().slice(0,10)}.mxr`;
   a.click();
   URL.revokeObjectURL(url);
-
-  showJsonStatus(`💾 บันทึกแล้ว: ${filename}`, true);
+  toast(`บันทึกแล้ว: ${a.download}`, 'ok');
 }
 
-function loadProgress(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  event.target.value = '';
-
-  if (!file.name.endsWith('.mxr')) {
-    showJsonStatus('❌ ไฟล์ต้องเป็น .mxr', false);
-    return;
-  }
-
+function loadProgress(e) {
+  const file = e.target.files[0]; if (!file) return;
+  e.target.value = '';
+  if (!file.name.endsWith('.mxr')) { toast('ไฟล์ต้องเป็น .mxr', 'err'); return; }
   const reader = new FileReader();
-  reader.onload = (e) => {
+  reader.onload = ev => {
     try {
-      // Decode base64
-      const b64 = e.target.result.trim();
-      const json = decodeURIComponent(escape(atob(b64)));
-      const snapshot = JSON.parse(json);
-
-      // Validate magic
-      if (snapshot.magic !== MXR_MAGIC) throw new Error('ไฟล์ไม่ถูกต้องหรือเสียหาย');
-
-      // Restore state
-      score = snapshot.score || 0;
+      const snap = JSON.parse(decodeURIComponent(escape(atob(ev.target.result.trim()))));
+      if (snap.magic !== MXR_MAGIC) throw new Error('ไฟล์ไม่ถูกต้อง');
+      score = snap.score || 0;
       completed.clear();
-      (snapshot.completed || []).forEach(i => completed.add(i));
-
-      document.getElementById('scoreDisplay').textContent = score;
-
-      // Restore codes if available
-      if (snapshot.codes && snapshot.currentIdx !== undefined) {
-        const targetIdx = Math.min(snapshot.currentIdx, exercises.length - 1);
-        selectExercise(targetIdx);
-
-        // Restore code for current exercise
-        const exId = exercises[targetIdx].id;
-        if (snapshot.codes[exId] && monacoEditor) {
-          monacoEditor.setValue(snapshot.codes[exId]);
-        }
+      (snap.completed || []).forEach(i => completed.add(i));
+      document.getElementById('scoreNum').textContent = score;
+      const idx = Math.min(snap.currentIdx || 0, exercises.length - 1);
+      selectExercise(idx);
+      if (snap.codes && exercises[idx] && snap.codes[exercises[idx].id] && editor) {
+        editor.setValue(snap.codes[exercises[idx].id]);
       }
-
-      updateSidebar();
-      updateProgress();
-
-      const savedDate = snapshot.savedAt ? new Date(snapshot.savedAt).toLocaleDateString('th-TH') : '?';
-      showJsonStatus(`📂 โหลดแล้ว: ${snapshot.studentName} | ${score} คะแนน | ${savedDate}`, true);
-
-    } catch(e) {
-      showJsonStatus('❌ โหลดไม่ได้: ' + e.message, false);
-    }
+      updateSidebar(); updateProgress();
+      const d = snap.savedAt ? new Date(snap.savedAt).toLocaleDateString('th-TH') : '?';
+      toast(`โหลดแล้ว: ${snap.studentName} | ${score} คะแนน | ${d}`, 'ok');
+    } catch(err) { toast('โหลดไม่ได้: ' + err.message, 'err'); }
   };
-  reader.onerror = () => showJsonStatus('❌ อ่านไฟล์ไม่ได้', false);
   reader.readAsText(file, 'UTF-8');
 }
 
-// ── PANEL RESIZER ──────────────────────────────────────────
+/* ══════════════════════════════════════════
+   PANEL RESIZER
+══════════════════════════════════════════ */
 (function() {
-  const resizer = document.getElementById('panelResizer');
-  const panel   = document.querySelector('.problem-panel');
-  let dragging = false, startY = 0, startH = 0;
-
-  resizer.addEventListener('mousedown', e => {
-    dragging = true;
-    startY = e.clientY;
-    startH = panel.offsetHeight;
-    resizer.classList.add('dragging');
+  const r = document.getElementById('resizer');
+  const p = document.getElementById('problemPanel');
+  let drag = false, sy = 0, sh = 0;
+  r.addEventListener('mousedown', e => {
+    drag = true; sy = e.clientY; sh = p.offsetHeight;
+    r.classList.add('active');
     document.body.style.userSelect = 'none';
     document.body.style.cursor = 'ns-resize';
   });
-
   document.addEventListener('mousemove', e => {
-    if (!dragging) return;
-    const newH = Math.max(60, Math.min(startH + (e.clientY - startY), window.innerHeight * 0.6));
-    panel.style.height = newH + 'px';
-    panel.style.maxHeight = 'none';
-    if (window.monacoEditor) window.monacoEditor.layout();
+    if (!drag) return;
+    const nh = Math.max(60, Math.min(sh + (e.clientY - sy), window.innerHeight * 0.55));
+    p.style.height = nh + 'px'; p.style.maxHeight = 'none';
+    if (editor) editor.layout();
   });
-
   document.addEventListener('mouseup', () => {
-    if (!dragging) return;
-    dragging = false;
-    resizer.classList.remove('dragging');
-    document.body.style.userSelect = '';
-    document.body.style.cursor = '';
-    if (window.monacoEditor) window.monacoEditor.layout();
+    if (!drag) return; drag = false;
+    r.classList.remove('active');
+    document.body.style.userSelect = ''; document.body.style.cursor = '';
+    if (editor) editor.layout();
   });
 })();
 
-// ── INIT ───────────────────────────────────────────────────
+/* ══════════════════════════════════════════
+   KEYBOARD SHORTCUTS
+══════════════════════════════════════════ */
+document.addEventListener('keydown', e => {
+  // Ctrl+Enter: run; Shift+Enter: check
+  if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'Enter') {
+    e.preventDefault();
+    if (!document.getElementById('checkBtn').disabled) checkAnswer();
+  }
+});
+
+/* ══════════════════════════════════════════
+   INIT
+══════════════════════════════════════════ */
 (async () => {
-  // โหลด theme จาก localStorage
-  const savedTheme = localStorage.getItem('py-adv-theme') || 'dark';
-  currentTheme = savedTheme;
-  if (savedTheme === 'light') applyTheme('light');
+  // Apply saved theme
+  applyTheme(currentTheme);
 
-  setupInputHandling();
-
-  // โหลดโจทย์จาก JSON ก่อน แล้วค่อย render UI
+  // Load exercises
   await loadDefaultJson();
 
-  // ถ้าโหลดไม่ได้เลย แสดง placeholder
   if (exercises.length === 0) {
-    document.getElementById('sidebar').innerHTML =
-      '<div style="padding:20px;color:var(--text2);font-size:0.8rem;text-align:center">⚠️ ยังไม่มีโจทย์<br>กด "โหลดโจทย์" หรือ "เพิ่มโจทย์"</div>';
-    document.getElementById('problemTitle').textContent = 'ยังไม่มีโจทย์';
-    document.getElementById('problemDesc').textContent = 'กด "โหลดโจทย์" ที่ navbar เพื่อโหลดจาก GitHub หรือ "เพิ่มโจทย์" เพื่อใช้ไฟล์ JSON ของคุณ';
+    document.getElementById('sidebarInner').innerHTML =
+      '<div style="padding:20px;color:var(--text2);font-size:0.78rem;text-align:center;line-height:1.7">⚠️ ยังไม่มีโจทย์<br>กด <b>โหลดโจทย์</b> หรือ <b>เพิ่มโจทย์</b></div>';
   } else {
     buildSidebar();
     selectExercise(0);
   }
 
-  document.getElementById('totalDisplay').textContent = exercises.length;
-
-  // โหลด Pyodide ควบคู่กัน
+  // Load Pyodide
   loadPyodideEngine();
 })();
 </script>
